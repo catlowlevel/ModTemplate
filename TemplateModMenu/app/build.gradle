@@ -1,0 +1,71 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 30
+    defaultConfig {
+        applicationId "com.android.support"
+        minSdkVersion 19
+        targetSdkVersion 30
+        versionCode 1
+        versionName "3.2"
+        ndk {
+            abiFilters 'arm64-v8a'
+        }
+        signingConfig signingConfigs.debug
+    }
+    buildTypes {
+        release {
+            shrinkResources false
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            shrinkResources false
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    externalNativeBuild {
+        ndkBuild {
+            path file('src/main/jni/Android.mk')
+        }
+    }
+    gradle.buildFinished { buildResult ->
+        if (buildResult.failure) {
+            return
+        }
+        println("Build Finished, running post-build script...")
+        def message = "default message";
+        def adbDevices = "adb devices".execute().text;
+        def exitValue = 0;
+        println(adbDevices);
+        if (adbDevices.find("device\n") != null) {
+            def result = exec {
+                workingDir "../scripts/"
+                commandLine "./send_to_phone.sh"
+            }
+            exec {
+                commandLine 'bash', '-c', "notify-send -t 5000 \"Post-build script\" \"Sending to devices...\""
+            }
+            exitValue = result.exitValue;
+        } else {
+            exec {
+                commandLine 'bash', '-c', "notify-send -t 5000 \"Post-build script\" \"No Devices attached!\""
+            }
+        }
+        if (exitValue == 0) {
+            message = "Post-build script executed successfully."
+        } else {
+            message = "Post-build script failed with error code: ${exitValue}"
+        }
+        exec {
+            commandLine 'bash', '-c', "notify-send -t 5000 \"Post-build script\" \"$message\""
+        }
+        println(message)
+    }
+}
+
+//dependencies must be placed below 'android' brackets to get it work on AIDE
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+}
