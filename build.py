@@ -7,6 +7,9 @@ import shutil
 
 ET.register_namespace("android", "http://schemas.android.com/apk/res/android")
 
+mode = "debug"
+do_clean_up = True
+
 
 def get_main_activity_name(manifest_file):
     try:
@@ -128,6 +131,16 @@ def main(argv: list[str]):
         print("Usage: python3 build.py <.apk>")
         exit(1)
 
+    global mode
+    global do_clean_up
+    if "--release" in argv:
+        argv.remove("--release")
+        mode = "release"
+        print("Release mode")
+    if "--keep" in argv:
+        argv.remove("--keep")
+        do_clean_up = False
+
     apk = argv[1]
 
     if not apk.endswith(".apk"):
@@ -144,7 +157,7 @@ def main(argv: list[str]):
         print("ModMenu dir not found")
         exit(1)
 
-    menu_apk = f"{mod_menu_dir}/app/build/intermediates/apk/debug/app-debug.apk"
+    menu_apk = f"{mod_menu_dir}/app/build/intermediates/apk/{mode}/app-{mode}.apk"
 
     # check if menu_apk exists
     if not os.path.exists(menu_apk):
@@ -203,12 +216,13 @@ def main(argv: list[str]):
     print(f"Copying {src} to {dst}")
     shutil.copy(src, dst)
     result = recompile(apk)
-    shutil.copy(result, f"{target_dir}_menued.apk")
-    print(f"Finished {target_dir}_menued.apk")
-    print("Cleaning up...")
-    shutil.rmtree(target_dir)
-    shutil.rmtree(menu_dir)
-    os.remove(f"menu_{get_filename(apk)}.apk")
+    shutil.copy(result, f"{target_dir}_menued-{mode}.apk")
+    print(f"Finished {target_dir}_menued-{mode}.apk")
+    if do_clean_up:
+        print("Cleaning up...")
+        shutil.rmtree(target_dir)
+        shutil.rmtree(menu_dir)
+        os.remove(f"menu_{get_filename(apk)}.apk")
     print("Done")
 
 
