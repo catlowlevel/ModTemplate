@@ -179,6 +179,10 @@ struct Il2CppObject {
 
     std::vector<FieldInfo *> getFields() const;
 
+    template<typename T>
+    void setField(const char *name, T newValue);
+
+
 private:
     uintptr_t _getFieldOffset(const char *name);
 };
@@ -218,14 +222,66 @@ struct FieldInfo {
 
     uintptr_t getValue(Il2CppObject *instance);
 
+    uintptr_t getStaticValue();
+
+    void setStaticValue(void *value);
+
+    void setValue(Il2CppObject *instance, void *value);
+
     template<typename T>
     T getValue(Il2CppObject *instance) {
         return (T) getValue(instance);
     }
 
+    template<typename T>
+    T getStaticValue() {
+        return (T) getStaticValue();
+    }
+
+    template<typename T>
+    void setValue(Il2CppObject *instance, T value) {
+        setValue(instance, (void *) value);
+    }
+
+    template<typename T>
+    void setStaticValue(T value) {
+        setStaticValue((void *) value);
+    }
+
+    uintptr_t getOffset();
+
     Il2CppType *getType();
 };
 
+struct Il2CppString : Il2CppObject {
+//    int32_t len;
+//    char chars[32];
+
+    std::string to_string();
+
+    const char *to_char();
+};
+
+template<typename T>
+struct List : Il2CppObject {
+    using Iter = T;
+
+    int size() {
+        return this->invoke_method<int>("get_Count");
+    }
+
+    T get(int index) {
+        return this->invoke_method<T>("get_Item", index);
+    }
+
+    Iter begin() {
+        return get(0);
+    }
+
+    Iter end() {
+        return get(size());
+    }
+};
 
 //////////////////////////USER TYPES/////////////////////////////
 struct BigDouble {
@@ -295,4 +351,10 @@ T Il2CppObject::getField(const char *name) {
 //        auto offset = _getFieldOffset(name);
 //        return (T) _getField(name);
 //        return (T) (this + offset);
+}
+
+template<typename T>
+void Il2CppObject::setField(const char *name, T newValue) {
+    auto field = klass->getField(name);
+    return field->setValue<T>(this, newValue);
 }

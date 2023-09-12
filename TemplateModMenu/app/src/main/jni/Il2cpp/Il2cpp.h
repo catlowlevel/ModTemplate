@@ -37,6 +37,9 @@ namespace Il2cpp {
 
     //field
     void GetFieldValue(Il2CppObject *object, FieldInfo *field, void *outValue);
+    void GetStaticFieldValue(FieldInfo *field, void *outValue);
+    void SetFieldValue(Il2CppObject *object, FieldInfo *field, void *newValue);
+    void SetStaticFieldValue(FieldInfo *field, void *outValue);
     Il2CppObject *GetFieldValueObect(Il2CppObject *object, FieldInfo *field);
     FieldInfo * GetField(Il2CppClass *klass, const char *fieldName);
     uintptr_t GetFieldOffset(FieldInfo* field);
@@ -46,6 +49,9 @@ namespace Il2cpp {
     Il2CppClass * GetClassFromType(Il2CppType *type);
     bool GetTypeIsPointer(Il2CppType *type);
     const char* GetTypeName(Il2CppType* type);
+
+    //string
+    const char* GetChars(Il2CppString* str); //returns wide char
 
 
     //@formatter:on

@@ -2,6 +2,9 @@
 // Created by misman on 02/09/23.
 //
 
+#include <string>
+#include <locale>
+#include <codecvt>
 #include "il2cpp-class.h"
 #include "Il2cpp.h"
 
@@ -60,10 +63,38 @@ Il2CppType *FieldInfo::getType() {
     return Il2cpp::GetFieldType(this);
 }
 
+void FieldInfo::setValue(Il2CppObject *instance, void *value) {
+    Il2cpp::SetFieldValue(instance, this, &value);
+}
+
+uintptr_t FieldInfo::getOffset() {
+    return Il2cpp::GetFieldOffset(this);
+}
+
+uintptr_t FieldInfo::getStaticValue() {
+    uintptr_t value;
+    Il2cpp::GetStaticFieldValue(this, &value);
+    return value;
+}
+
+void FieldInfo::setStaticValue(void *value) {
+    Il2cpp::SetStaticFieldValue(this, &value);
+}
+
 bool Il2CppType::isPointer() {
     return Il2cpp::GetTypeIsPointer(this);
 }
 
 const char *Il2CppType::getName() {
     return Il2cpp::GetTypeName(this);
+}
+
+std::string Il2CppString::to_string() {
+    auto chars = Il2cpp::GetChars(this);
+    std::u16string u16(reinterpret_cast<const char16_t *>(chars));
+    return std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}.to_bytes(u16);
+}
+
+const char *Il2CppString::to_char() {
+    return this->to_string().c_str();
 }

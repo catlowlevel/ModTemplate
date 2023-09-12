@@ -502,8 +502,20 @@ namespace Il2cpp {
         il2cpp_field_get_value(object, field, outValue);
     }
 
+    void SetFieldValue(Il2CppObject *object, FieldInfo *field, void *newValue) {
+        il2cpp_field_set_value(object, field, newValue);
+    }
+
     FieldInfo *GetFields(Il2CppClass *klass, void **iter) {
         return il2cpp_class_get_fields(klass, iter);
+    }
+
+    void GetStaticFieldValue(FieldInfo *field, void *outValue) {
+        il2cpp_field_static_get_value(field, outValue);
+    }
+
+    void SetStaticFieldValue(FieldInfo *field, void *outValue) {
+        il2cpp_field_static_set_value(field, outValue);
     }
 
     Il2CppObject *GetFieldValueObect(Il2CppObject *object, FieldInfo *field) {
@@ -571,5 +583,9 @@ namespace Il2cpp {
 
     const char *GetTypeName(Il2CppType *type) {
         return il2cpp_type_get_name(type);
+    }
+
+    const char *GetChars(Il2CppString *str) {
+        return reinterpret_cast<const char *>(il2cpp_string_chars(str));
     }
 }
