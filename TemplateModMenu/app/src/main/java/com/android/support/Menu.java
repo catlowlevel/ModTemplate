@@ -70,29 +70,31 @@ public class Menu {
     //region Variable
     public static final String TAG = "Mod_Menu"; //Tag for logcat
 
-    int TEXT_COLOR = Color.parseColor("#82CAFD");
+    int TEXT_COLOR = Color.parseColor("#FE4057");
     int TEXT_COLOR_2 = Color.parseColor("#FFFFFF");
-    int BTN_COLOR = Color.parseColor("#1C262D");
-    int MENU_BG_COLOR = Color.parseColor("#EE1C2A35"); //#AARRGGBB
-    int MENU_FEATURE_BG_COLOR = Color.parseColor("#DD141C22"); //#AARRGGBB
+    int BTN_COLOR = Color.parseColor("#2A2532"); 
+    int MENU_BG_COLOR = Color.parseColor("#EE1C2A35"); 
+    int MENU_FEATURE_BG_COLOR = Color.parseColor("#DD141C22"); 
+
+    // Rest of the variables can remain the same
     int MENU_WIDTH = 290;
     int MENU_HEIGHT = 210;
     int POS_X = 0;
     int POS_Y = 100;
-
     float MENU_CORNER = 4f;
-    int ICON_SIZE = 45; //Change both width and height of image
-    float ICON_ALPHA = 0.7f; //Transparent
-    int ToggleON = Color.GREEN;
-    int ToggleOFF = Color.RED;
-    int BtnON = Color.parseColor("#1b5e20");
-    int BtnOFF = Color.parseColor("#7f0000");
+    int ICON_SIZE = 45; // Change both width and height of the image
+    float ICON_ALPHA = 0.7f; // Transparent
+    int ToggleON = Color.parseColor("#FE4057");
+    int ToggleOFF = Color.parseColor("#2A2532");
+    int BtnON = Color.parseColor("#FE4057");
+    int BtnOFF = Color.parseColor("#2A2532");
     int CategoryBG = Color.parseColor("#2F3D4C");
-    int SeekBarColor = Color.parseColor("#80CBC4");
-    int SeekBarProgressColor = Color.parseColor("#80CBC4");
-    int CheckBoxColor = Color.parseColor("#80CBC4");
-    int RadioColor = Color.parseColor("#FFFFFF");
-    String NumberTxtColor = "#41c300";
+    int SeekBarColor = Color.parseColor("#FE4057");
+    int SeekBarProgressColor = Color.parseColor("#FE4057");
+    int CheckBoxColor = Color.parseColor("#FE4057");
+    int RadioColor = Color.parseColor("#FE4057");
+    String NumberTxtColor = "#FE4057";
+
     //********************************************************************//
 
     RelativeLayout mCollapsed, mRootContainer;
