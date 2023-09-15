@@ -427,7 +427,6 @@ void il2cpp_api_init(void *handle) {
 //}
 
 
-std::unordered_map<std::thread::id, bool> attachMap = {};
 namespace Il2cpp {
     void Init() {
         auto handle = dlopen("libil2cpp.so", RTLD_LAZY);
@@ -439,20 +438,15 @@ namespace Il2cpp {
         auto curr = il2cpp_thread_current();
         if (!curr) {
             LOGI("Foreign thread!");
-        }
-        auto threadId = std::this_thread::get_id();
-        auto it = attachMap.find(threadId);
-        if (it == attachMap.end()) {
-            LOGI("Attaching Thread -> %llX", threadId);
-            void *thread = il2cpp_thread_attach(il2cpp_domain_get());
-            if (!thread) {
-                LOGE("Attaching Failed");
-                return false;
-            }
-            LOGI("Attached -> %llX", thread);
-            attachMap.emplace(threadId, true);
         } else {
-            LOGI("Thread %llX already attached!", threadId);
+            LOGI("Already Attached -> %llX", curr);
+            return true;
+        }
+        LOGI("Attaching Thread");
+        void *thread = il2cpp_thread_attach(il2cpp_domain_get());
+        if (!thread) {
+            LOGE("Attaching Failed");
+            return false;
         }
         return true;
     }
@@ -474,6 +468,10 @@ namespace Il2cpp {
         return result;
     }
 
+    Il2CppImage *GetImage(const char *assemblyName) {
+        return GetImage(GetAssembly(assemblyName));
+    }
+
     Il2CppClass *GetClass(Il2CppImage *image, const char *name) {
         std::string nameStr = name;
         const size_t dotIndex = nameStr.find_last_of('.');
@@ -492,7 +490,11 @@ namespace Il2cpp {
         return result;
     }
 
-    FieldInfo *GetField(Il2CppClass *klass, const char *fieldName) {
+    Il2CppImage *GetClassImage(Il2CppClass *klass) {
+        return il2cpp_class_get_image(klass);
+    }
+
+    FieldInfo *GetClassField(Il2CppClass *klass, const char *fieldName) {
         auto result = il2cpp_class_get_field_from_name(klass, fieldName);
         if (!result) LOGE("There's no field : %s", fieldName);
         return result;
@@ -506,15 +508,15 @@ namespace Il2cpp {
         il2cpp_field_set_value(object, field, newValue);
     }
 
-    FieldInfo *GetFields(Il2CppClass *klass, void **iter) {
+    FieldInfo *GetClassFields(Il2CppClass *klass, void **iter) {
         return il2cpp_class_get_fields(klass, iter);
     }
 
-    void GetStaticFieldValue(FieldInfo *field, void *outValue) {
+    void GetFieldStaticValue(FieldInfo *field, void *outValue) {
         il2cpp_field_static_get_value(field, outValue);
     }
 
-    void SetStaticFieldValue(FieldInfo *field, void *outValue) {
+    void SetFieldStaticValue(FieldInfo *field, void *outValue) {
         il2cpp_field_static_set_value(field, outValue);
     }
 
@@ -522,11 +524,11 @@ namespace Il2cpp {
         return il2cpp_field_get_value_object(field, object);
     }
 
-    MethodInfo *GetMethods(Il2CppClass *klass, void **iter) {
+    MethodInfo *GetClassMethods(Il2CppClass *klass, void **iter) {
         return il2cpp_class_get_methods(klass, iter);
     }
 
-    int32_t GetInstanceSize(Il2CppClass *klass) {
+    int32_t GetClassSize(Il2CppClass *klass) {
         return il2cpp_class_instance_size(klass);
     }
 
@@ -534,11 +536,11 @@ namespace Il2cpp {
         return il2cpp_object_get_size(object);
     }
 
-    uint32_t GetParamCount(MethodInfo *method) {
+    uint32_t GetMethodParamCount(MethodInfo *method) {
         return il2cpp_method_get_param_count(method);
     }
 
-    const char *GetParamName(MethodInfo *method, uint32_t index) {
+    const char *GetMethodParamName(MethodInfo *method, uint32_t index) {
         return il2cpp_method_get_param_name(method, index);
     }
 
@@ -548,6 +550,10 @@ namespace Il2cpp {
 
     const char *GetClassName(Il2CppClass *klass) {
         return il2cpp_class_get_name(klass);
+    }
+
+    const char *GetClassNamespace(Il2CppClass *klass) {
+        return il2cpp_class_get_namespace(klass);
     }
 
     uintptr_t GetFieldOffset(FieldInfo *field) {
@@ -569,6 +575,10 @@ namespace Il2cpp {
         return il2cpp_method_get_return_type(method);
     }
 
+    Il2CppType *GetMethodParam(MethodInfo *method, uint32_t index) {
+        return il2cpp_method_get_param(method, index);
+    }
+
     Il2CppClass *GetClassFromType(Il2CppType *type) {
         return il2cpp_class_from_type(type);
     }
@@ -581,11 +591,23 @@ namespace Il2cpp {
         return il2cpp_field_get_type(field);
     }
 
+    const char *GetFieldName(FieldInfo *field) {
+        return il2cpp_field_get_name(field);
+    }
+
     const char *GetTypeName(Il2CppType *type) {
         return il2cpp_type_get_name(type);
     }
 
     const char *GetChars(Il2CppString *str) {
         return reinterpret_cast<const char *>(il2cpp_string_chars(str));
+    }
+
+    const char *GetImageName(Il2CppImage *image) {
+        return il2cpp_image_get_name(image);
+    }
+
+    uint32_t GetArrayLength(_Il2CppArray* array) {
+        return il2cpp_array_length(array);
     }
 }

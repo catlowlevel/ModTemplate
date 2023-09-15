@@ -14,7 +14,7 @@ typedef char Il2CppNativeChar;
 typedef struct Il2CppMemoryCallbacks Il2CppMemoryCallbacks;
 typedef struct Il2CppImage Il2CppImage;
 typedef struct Il2CppClass Il2CppClass;
-typedef struct Il2CppArrayBounds Il2CppArrayBounds;
+//typedef struct Il2CppArrayBounds Il2CppArrayBounds;
 typedef struct Il2CppAssembly Il2CppAssembly;
 typedef struct Il2CppArrayType Il2CppArrayType;
 typedef struct Il2CppGenericClass Il2CppGenericClass;
@@ -132,6 +132,8 @@ struct Il2CppType {
     bool isPointer();
 
     const char *getName();
+
+    Il2CppClass *getClass();
 };
 
 struct MethodInfo {
@@ -152,6 +154,13 @@ struct MethodInfo {
     const char *getName();
 
     Il2CppType *getReturnType();
+
+    std::vector<std::pair<const char *, Il2CppType *>> getParamsInfo(); //param name, param type
+
+private:
+    static bool _isAlreadyHooked(uintptr_t ptr);
+
+    static void _addToHookedMap(uintptr_t ptr);
 };
 
 
@@ -177,11 +186,8 @@ struct Il2CppObject {
     template<typename T>
     T getField(const char *name);
 
-    std::vector<FieldInfo *> getFields() const;
-
     template<typename T>
     void setField(const char *name, T newValue);
-
 
 private:
     uintptr_t _getFieldOffset(const char *name);
@@ -189,13 +195,15 @@ private:
 
 
 struct _Il2CppArray : Il2CppObject {
-    Il2CppArrayBounds *bounds;
-    il2cpp_array_size_t max_length;
+    void *bounds;//Il2CppArrayBounds
+    il2cpp_array_size_t max_length; //maybe same as length
 
+    uint32_t length();
 };
+
 template<typename T>
 struct Il2CppArray : _Il2CppArray {
-    T *data[32];
+    T data[32];
 };
 
 struct Il2CppAssembly {
@@ -204,16 +212,26 @@ struct Il2CppAssembly {
 
 struct Il2CppImage {
     Il2CppClass *getClass(const char *name);
+
+    const char *getName();
 };
 
 struct Il2CppClass {
     MethodInfo *getMethod(const char *name);
 
+    MethodInfo *findMethod(const char *name, size_t idx = 0);
+
     FieldInfo *getField(const char *fieldName);
+
+    std::vector<FieldInfo *> getFields();
+
+    Il2CppImage *getImage();
 
     std::vector<MethodInfo *> getMethods();
 
     const char *getName();
+
+    const char *getNamespace();
 
     size_t getSize();
 };
@@ -251,6 +269,8 @@ struct FieldInfo {
     uintptr_t getOffset();
 
     Il2CppType *getType();
+
+    const char *getName();
 };
 
 struct Il2CppString : Il2CppObject {
@@ -315,7 +335,12 @@ T Il2CppObject::invoke_method(MethodInfo *method, Args &&... args) {
 
 template<typename T>
 void *MethodInfo::replace(T func) {
+    if (_isAlreadyHooked((uintptr_t) methodPointer)) {
+        LOGD("Already hooked");
+        return nullptr;
+    }
     A64HookFunction(methodPointer, (void *) func, &methodPointer);
+    _addToHookedMap((uintptr_t) methodPointer);
     return methodPointer;
 }
 
