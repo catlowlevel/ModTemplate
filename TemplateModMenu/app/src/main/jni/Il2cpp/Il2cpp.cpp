@@ -18,6 +18,8 @@
 #include "il2cpp-tabledefs.h"
 #include "il2cpp-class.h"
 
+#include "xdl/include/xdl.h"
+
 #define DO_API(r, n, p) r (*n) p
 
 #include "il2cpp-api-functions.h"
@@ -28,7 +30,7 @@ static uint64_t il2cpp_base = 0;
 
 void init_il2cpp_api(void *handle) {
 #define DO_API(r, n, p) {                      \
-    n = (r (*) p)dlsym(handle, #n); \
+    n = (r (*) p)xdl_sym(handle, #n, nullptr); \
 }
 
 #include "il2cpp-api-functions.h"
@@ -429,9 +431,9 @@ void il2cpp_api_init(void *handle) {
 
 namespace Il2cpp {
     void Init() {
-        auto handle = dlopen("libil2cpp.so", RTLD_LAZY);
+        auto handle = xdl_open("libil2cpp.so", 0);
         il2cpp_api_init(handle);
-        dlclose(handle);
+        xdl_close(handle);
     }
 
     bool EnsureAttached() {
@@ -607,7 +609,7 @@ namespace Il2cpp {
         return il2cpp_image_get_name(image);
     }
 
-    uint32_t GetArrayLength(_Il2CppArray* array) {
+    uint32_t GetArrayLength(_Il2CppArray *array) {
         return il2cpp_array_length(array);
     }
 }

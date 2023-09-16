@@ -30,5 +30,10 @@ LOCAL_SRC_FILES := Main.cpp \
 	And64InlineHook/And64InlineHook.cpp \
 	Il2cpp/Il2cpp.cpp \
 	Il2cpp/il2cpp-class.cpp \
+	Il2cpp/xdl/xdl.c \
+	Il2cpp/xdl/xdl_iterate.c \
+	Il2cpp/xdl/xdl_linker.c \
+	Il2cpp/xdl/xdl_lzma.c \
+	Il2cpp/xdl/xdl_util.c \
 
 include $(BUILD_SHARED_LIBRARY)
