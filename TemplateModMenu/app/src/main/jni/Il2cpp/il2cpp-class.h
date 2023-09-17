@@ -346,27 +346,23 @@ void *MethodInfo::replace(T func) {
 
 template<typename T, typename... Args>
 T MethodInfo::invoke_static(Args &&... args) {
-    using Invoker = T(*)(Args...);
+    using Invoker = T(*)(Args..., MethodInfo *);
     auto invoker = reinterpret_cast<Invoker>(this->methodPointer);
-    return invoker(std::forward<Args>(args)...);
+    return invoker(std::forward<Args>(args)..., this);
 }
 
 template<typename T, typename... Args>
 T MethodInfo::invoke(Il2CppObject *instance) {
-    using Invoker = T(*)(Il2CppObject *);
+    using Invoker = T(*)(Il2CppObject *, MethodInfo *);
     auto invoker = reinterpret_cast<Invoker>(this->methodPointer);
-    return invoker(instance);
+    return invoker(instance, this);
 }
 
 template<typename T, typename... Args>
 T MethodInfo::invoke(Il2CppObject *instance, Args &&... args) {
-    using Invoker = T(*)(Il2CppObject *, Args...);
-//    constexpr auto size = (sizeof(Args) + ...);
-//    char buffer[100];
-//    sprintf(buffer, "Size %d Param %d", size, getParamCount());
-//    Log(buffer);
+    using Invoker = T(*)(Il2CppObject *, Args..., MethodInfo *);
     auto invoker = reinterpret_cast<Invoker>(this->methodPointer);
-    return invoker(instance, std::forward<Args>(args)...);
+    return invoker(instance, std::forward<Args>(args)..., this);
 }
 
 template<typename T>
