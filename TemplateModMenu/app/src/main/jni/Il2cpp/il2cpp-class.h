@@ -2,7 +2,8 @@
 
 #include <cstdint>
 #include <vector>
-#include "And64InlineHook/And64InlineHook.hpp"
+//#include "And64InlineHook/And64InlineHook.hpp"
+#include "Dobby/include/dobby.h"
 #include "log.h"
 
 typedef uint16_t Il2CppChar;
@@ -339,7 +340,7 @@ void *MethodInfo::replace(T func) {
         LOGD("Already hooked");
         return nullptr;
     }
-    A64HookFunction(methodPointer, (void *) func, &methodPointer);
+    DobbyHook(methodPointer, (void *) func, &methodPointer);
     _addToHookedMap((uintptr_t) methodPointer);
     return methodPointer;
 }

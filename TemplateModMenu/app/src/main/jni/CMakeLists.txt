@@ -10,6 +10,23 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Add flags
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w -s -Wno-error=format-security -fvisibility=hidden -fpermissive -fexceptions -Wno-error=c++11-narrowing -Wall")
+set(LINKER_FLAGS "-ffixed-x18 -Wl,--hash-style=both")
+set(C_FLAGS "-Werror=format -fdata-sections -ffunction-sections")
+
+if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(C_FLAGS "${C_FLAGS} -O2 -fvisibility=hidden -fvisibility-inlines-hidden")
+    set(LINKER_FLAGS "${LINKER_FLAGS} -Wl,-exclude-libs,ALL -Wl,--gc-sections -Wl,--strip-all")
+    set(DOBBY_DEBUG OFF)
+else ()
+    set(C_FLAGS "${C_FLAGS} -O0")
+endif ()
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${C_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${C_FLAGS} ${CXX_FLAGS}")
+
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${LINKER_FLAGS}")
+
+set(DOBBY_GENERATE_SHARED OFF)
 
 # Add the source files
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
@@ -37,6 +54,7 @@ set(LOCAL_SRC_FILES
 # Add include directories
 include_directories(${SRC_DIR})
 
+add_subdirectory(Dobby)
 # Add the shared library
 add_library(MyLibName SHARED ${LOCAL_SRC_FILES})
 
@@ -46,4 +64,5 @@ target_link_libraries(MyLibName
         android
         EGL
         GLESv2
+        dobby_static
         )
