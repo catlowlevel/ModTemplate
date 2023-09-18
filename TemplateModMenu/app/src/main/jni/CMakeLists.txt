@@ -17,12 +17,14 @@ if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(C_FLAGS "${C_FLAGS} -O2 -fvisibility=hidden -fvisibility-inlines-hidden")
     set(LINKER_FLAGS "${LINKER_FLAGS} -Wl,-exclude-libs,ALL -Wl,--gc-sections -Wl,--strip-all")
     set(DOBBY_DEBUG OFF)
+    message("Release Mode")
 else ()
     set(C_FLAGS "${C_FLAGS} -O0")
+    message("Debug Mode")
 endif ()
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${C_FLAGS}")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${C_FLAGS} ${CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${C_FLAGS}")
 
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${LINKER_FLAGS}")
 
@@ -32,16 +34,10 @@ set(DOBBY_GENERATE_SHARED OFF)
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(LOCAL_SRC_FILES
         Main.cpp
-        Substrate/hde64.c
-        Substrate/SubstrateDebug.cpp
-        Substrate/SubstrateHook.cpp
-        Substrate/SubstratePosixMemory.cpp
-        Substrate/SymbolFinder.cpp
         KittyMemory/KittyMemory.cpp
         KittyMemory/MemoryPatch.cpp
         KittyMemory/MemoryBackup.cpp
         KittyMemory/KittyUtils.cpp
-        And64InlineHook/And64InlineHook.cpp
         Il2cpp/Il2cpp.cpp
         Il2cpp/il2cpp-class.cpp
         Il2cpp/xdl/xdl.c

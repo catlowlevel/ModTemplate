@@ -4,7 +4,7 @@
 #include <vector>
 //#include "And64InlineHook/And64InlineHook.hpp"
 #include "Dobby/include/dobby.h"
-#include "log.h"
+#include "Includes/Logger.h"
 
 typedef uint16_t Il2CppChar;
 typedef uintptr_t il2cpp_array_size_t;

@@ -14,7 +14,6 @@
 #include <unistd.h>
 #include <unordered_map>
 #include <thread>
-#include "log.h"
 #include "il2cpp-tabledefs.h"
 #include "il2cpp-class.h"
 
