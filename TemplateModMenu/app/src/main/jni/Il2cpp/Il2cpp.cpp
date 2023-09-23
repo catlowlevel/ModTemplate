@@ -596,6 +596,14 @@ namespace Il2cpp {
         return il2cpp_method_is_inflated(method);
     }
 
+    Il2CppReflectionMethod *GetMethodObject(MethodInfo *method, Il2CppClass *refclass) {
+        return il2cpp_method_get_object(method, refclass);
+    }
+
+    MethodInfo *GetMethodFromReflection(Il2CppReflectionMethod *method) {
+        return il2cpp_method_get_from_reflection(method);
+    }
+
     Il2CppClass *GetClassFromType(Il2CppType *type) {
         return il2cpp_class_from_type(type);
     }
@@ -630,5 +638,9 @@ namespace Il2cpp {
 
     uint32_t GetArrayLength(_Il2CppArray *array) {
         return il2cpp_array_length(array);
+    }
+
+    _Il2CppArray *ArrayNew(Il2CppClass *elementTypeInfo, il2cpp_array_size_t length) {
+        return il2cpp_array_new(elementTypeInfo, length);
     }
 }

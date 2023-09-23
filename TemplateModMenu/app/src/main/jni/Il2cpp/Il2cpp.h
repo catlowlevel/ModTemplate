@@ -46,6 +46,8 @@ namespace Il2cpp {
     Il2CppType* GetMethodParam(MethodInfo* method, uint32_t index);
     bool GetIsMethodGeneric(MethodInfo* method);
     bool GetIsMethodInflated(MethodInfo* method);
+    Il2CppReflectionMethod* GetMethodObject(MethodInfo* method,Il2CppClass* refclass = nullptr);
+    MethodInfo* GetMethodFromReflection(Il2CppReflectionMethod * method);
 
     //field
     void GetFieldValue(Il2CppObject *object, FieldInfo *field, void *outValue);
@@ -68,6 +70,12 @@ namespace Il2cpp {
 
     //array
     uint32_t GetArrayLength(_Il2CppArray* array);
+    _Il2CppArray* ArrayNew(Il2CppClass * elementTypeInfo, il2cpp_array_size_t length);
+    template<typename T>
+    Il2CppArray<T>* ArrayNewGeneric(Il2CppClass * elementTypeInfo, il2cpp_array_size_t length){
+        return static_cast<Il2CppArray<T>*>(ArrayNew(elementTypeInfo,length));
+    }
+
 
 
     //@formatter:on
