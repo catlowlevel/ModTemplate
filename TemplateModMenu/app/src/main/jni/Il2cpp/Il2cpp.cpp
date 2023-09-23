@@ -469,6 +469,10 @@ namespace Il2cpp {
         return result;
     }
 
+    Il2CppImage *GetCorlib() {
+        return il2cpp_get_corlib();
+    }
+
     Il2CppImage *GetImage(const char *assemblyName) {
         return GetImage(GetAssembly(assemblyName));
     }
@@ -572,12 +576,24 @@ namespace Il2cpp {
         return classes;
     }
 
+    Il2CppType *GetClassType(Il2CppClass *klass) {
+        return il2cpp_class_get_type(klass);
+    }
+
     Il2CppType *GetMethodReturnType(MethodInfo *method) {
         return il2cpp_method_get_return_type(method);
     }
 
     Il2CppType *GetMethodParam(MethodInfo *method, uint32_t index) {
         return il2cpp_method_get_param(method, index);
+    }
+
+    bool GetIsMethodGeneric(MethodInfo *method) {
+        il2cpp_method_is_generic(method);
+    }
+
+    bool GetIsMethodInflated(MethodInfo *method) {
+        return il2cpp_method_is_inflated(method);
     }
 
     Il2CppClass *GetClassFromType(Il2CppType *type) {
@@ -598,6 +614,10 @@ namespace Il2cpp {
 
     const char *GetTypeName(Il2CppType *type) {
         return il2cpp_type_get_name(type);
+    }
+
+    Il2CppObject *GetTypeObject(Il2CppType *type) {
+        return il2cpp_type_get_object(type);
     }
 
     const char *GetChars(Il2CppString *str) {

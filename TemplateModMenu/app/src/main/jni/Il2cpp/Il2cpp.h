@@ -15,6 +15,7 @@ namespace Il2cpp {
 
     Il2CppDomain *GetDomain();
     Il2CppImage *GetImage(Il2CppAssembly *assembly);
+    Il2CppImage *GetCorlib();
     Il2CppImage *GetImage(const char *assemblyName);
     Il2CppAssembly *GetAssembly(const char *name);
     Il2CppClass *GetClass(Il2CppImage *image, const char *name);
@@ -29,6 +30,7 @@ namespace Il2cpp {
     const char* GetClassName(Il2CppClass *klass);
     const char *GetClassNamespace(Il2CppClass *klass);
     std::vector<Il2CppClass *> GetClasses();
+    Il2CppType* GetClassType(Il2CppClass* klass);
 
     //object
     uint32_t GetObjectSize(Il2CppObject *object);
@@ -42,6 +44,8 @@ namespace Il2cpp {
     const char* GetMethodName(MethodInfo* method);
     Il2CppType* GetMethodReturnType(MethodInfo* method);
     Il2CppType* GetMethodParam(MethodInfo* method, uint32_t index);
+    bool GetIsMethodGeneric(MethodInfo* method);
+    bool GetIsMethodInflated(MethodInfo* method);
 
     //field
     void GetFieldValue(Il2CppObject *object, FieldInfo *field, void *outValue);
@@ -57,6 +61,7 @@ namespace Il2cpp {
     Il2CppClass * GetClassFromType(Il2CppType *type);
     bool GetTypeIsPointer(Il2CppType *type);
     const char* GetTypeName(Il2CppType* type);
+    Il2CppObject * GetTypeObject(Il2CppType* type);
 
     //string
     const char* GetChars(Il2CppString* str); //returns wide char
