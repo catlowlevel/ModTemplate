@@ -46,7 +46,7 @@ Il2CppType *MethodInfo::getReturnType() {
     return Il2cpp::GetMethodReturnType(this);
 }
 
-std::unordered_map<uintptr_t, bool> alreadyHooked{};
+std::unordered_map<uintptr_t, intptr_t> alreadyHooked{};
 
 bool MethodInfo::_isAlreadyHooked(uintptr_t ptr) {
     if (alreadyHooked.find(ptr) != alreadyHooked.end()) {
@@ -55,8 +55,8 @@ bool MethodInfo::_isAlreadyHooked(uintptr_t ptr) {
     return false;
 }
 
-void MethodInfo::_addToHookedMap(uintptr_t ptr) {
-    alreadyHooked[ptr] = true;
+void MethodInfo::_addToHookedMap(uintptr_t ptr, uintptr_t oPtr) {
+    alreadyHooked[ptr] = oPtr;
 }
 
 std::vector<std::pair<const char *, Il2CppType *>> MethodInfo::getParamsInfo() {
@@ -66,6 +66,37 @@ std::vector<std::pair<const char *, Il2CppType *>> MethodInfo::getParamsInfo() {
         params.emplace_back(Il2cpp::GetMethodParamName(this, i), Il2cpp::GetMethodParam(this, i));
     }
     return params;
+}
+
+MethodInfo *MethodInfo::inflate(std::initializer_list<Il2CppClass *> types) {
+    if (types.size() != Il2cpp::GetMethodGenericCount(this)) {
+        LOGE("Types generic count doesn't match");
+        return nullptr;
+    }
+    static auto corlib = Il2cpp::GetCorlib();
+    static auto systemType = corlib->getClass("System.Type");
+    auto array = Il2cpp::ArrayNewGeneric<Il2CppObject *>(systemType, types.size());
+    int i = 0;
+    for (auto type: types) {
+        auto typeObj = Il2cpp::GetTypeObject(Il2cpp::GetClassType(type));
+        array->data[i] = typeObj;
+        i++;
+    }
+    auto methodObj = this->getObject();
+    auto result = methodObj->invoke_method<Il2CppReflectionMethod *>("MakeGenericMethod", array);
+    return Il2cpp::GetMethodFromReflection(result);
+}
+
+Il2CppObject *MethodInfo::getObject() {
+    return (Il2CppObject *) Il2cpp::GetMethodObject(this);
+}
+
+uintptr_t MethodInfo::_getHookedMap(uintptr_t ptr) {
+    auto it = alreadyHooked.find(ptr);
+    if (it != alreadyHooked.end()) {
+        return it->second;
+    }
+    return ptr;
 }
 
 uintptr_t Il2CppObject::_getFieldOffset(const char *name) {
@@ -114,32 +145,16 @@ MethodInfo *Il2CppClass::findMethod(const char *name, size_t idx) {
     return found.at(idx);
 }
 
-uintptr_t FieldInfo::getValue(Il2CppObject *instance) {
-    uintptr_t value;
-    Il2cpp::GetFieldValue(instance, this, &value);
-    return value;
+bool Il2CppClass::isGeneric() {
+    return Il2cpp::GetClassIsGeneric(this);
 }
 
 Il2CppType *FieldInfo::getType() {
     return Il2cpp::GetFieldType(this);
 }
 
-void FieldInfo::setValue(Il2CppObject *instance, void *value) {
-    Il2cpp::SetFieldValue(instance, this, &value);
-}
-
 uintptr_t FieldInfo::getOffset() {
     return Il2cpp::GetFieldOffset(this);
-}
-
-uintptr_t FieldInfo::getStaticValue() {
-    uintptr_t value;
-    Il2cpp::GetFieldStaticValue(this, &value);
-    return value;
-}
-
-void FieldInfo::setStaticValue(void *value) {
-    Il2cpp::SetFieldStaticValue(this, &value);
 }
 
 const char *FieldInfo::getName() {

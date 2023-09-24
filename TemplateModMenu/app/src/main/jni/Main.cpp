@@ -21,20 +21,18 @@
 
 #include "Includes/Macros.h"
 
-#define LOGPTR(ptr) LOGD(#ptr " => 0x%llX", ptr)
-
 
 Il2CppImage *g_Image = nullptr;
 
-#define REPLACE_NAME(class, name, method)               \
-{                                                       \
-    auto m = g_Image->getClass(class)->getMethod(name); \
-    auto old = m->methodPointer;                        \
-    m->replace(method);                                 \
-    auto n = m->methodPointer;                                 \
-    LOGD("%s (%llX -> %llX) HOOKED", name, old, n);                \
-}
-#define REPLACE(class, method) REPLACE_NAME(class, #method, method)
+#define REPLACE_KLASS_NAME(klass, name, method) do {     \
+    auto m = klass->getMethod(name);                     \
+    auto old = m->methodPointer;                         \
+    auto n = m->replace(method);                         \
+    LOGD("%s (%llX -> %llX) HOOKED", name, old, n);      \
+} while(0)
+#define REPLACE_KLASS(klass, method) REPLACE_KLASS_NAME(klass, #method, method)
+#define REPLACE_NAME(className, name, method) REPLACE_KLASS_NAME(g_Image->getClass(className), name, method)
+#define REPLACE(className, method) REPLACE_NAME(className, #method, method)
 
 
 // we will run our hacks in a new thread so our while loop doesn't block process main thread
@@ -52,7 +50,6 @@ void *hack_thread(void *) {
     Il2cpp::EnsureAttached();
 
     LOGD("HOOKING...");
-
 //    g_Image = Il2cpp::GetAssembly("Game.Domain")->getImage();
 //
 //    REPLACE_NAME("Game.Domain.Models.Heroes.HeroModel", "Initialize", HeroModelInitialize);

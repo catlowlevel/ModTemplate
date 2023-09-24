@@ -444,17 +444,20 @@ namespace Il2cpp {
             return true;
         }
         LOGI("Attaching Thread");
-        void *thread = il2cpp_thread_attach(il2cpp_domain_get());
+        auto *thread = il2cpp_thread_attach(il2cpp_domain_get());
+        while (!il2cpp_is_vm_thread(thread)) {
+            LOGI("Waiting...");
+            sleep(1);
+        }
         if (!thread) {
             LOGE("Attaching Failed");
             return false;
         }
+        LOGI("Thread Attached");
         return true;
     }
 
-    Il2CppDomain *GetDomain() {
-        return il2cpp_domain_get();
-    }
+    Il2CppDomain *GetDomain() { return il2cpp_domain_get(); }
 
     Il2CppAssembly *GetAssembly(const char *name) {
         auto result = il2cpp_domain_assembly_open(il2cpp_domain_get(), name);
@@ -469,13 +472,9 @@ namespace Il2cpp {
         return result;
     }
 
-    Il2CppImage *GetCorlib() {
-        return il2cpp_get_corlib();
-    }
+    Il2CppImage *GetCorlib() { return il2cpp_get_corlib(); }
 
-    Il2CppImage *GetImage(const char *assemblyName) {
-        return GetImage(GetAssembly(assemblyName));
-    }
+    Il2CppImage *GetImage(const char *assemblyName) { return GetImage(GetAssembly(assemblyName)); }
 
     Il2CppClass *GetClass(Il2CppImage *image, const char *name) {
         std::string nameStr = name;
@@ -495,9 +494,7 @@ namespace Il2cpp {
         return result;
     }
 
-    Il2CppImage *GetClassImage(Il2CppClass *klass) {
-        return il2cpp_class_get_image(klass);
-    }
+    Il2CppImage *GetClassImage(Il2CppClass *klass) { return il2cpp_class_get_image(klass); }
 
     FieldInfo *GetClassField(Il2CppClass *klass, const char *fieldName) {
         auto result = il2cpp_class_get_field_from_name(klass, fieldName);
@@ -533,13 +530,9 @@ namespace Il2cpp {
         return il2cpp_class_get_methods(klass, iter);
     }
 
-    int32_t GetClassSize(Il2CppClass *klass) {
-        return il2cpp_class_instance_size(klass);
-    }
+    int32_t GetClassSize(Il2CppClass *klass) { return il2cpp_class_instance_size(klass); }
 
-    uint32_t GetObjectSize(Il2CppObject *object) {
-        return il2cpp_object_get_size(object);
-    }
+    uint32_t GetObjectSize(Il2CppObject *object) { return il2cpp_object_get_size(object); }
 
     uint32_t GetMethodParamCount(MethodInfo *method) {
         return il2cpp_method_get_param_count(method);
@@ -549,21 +542,13 @@ namespace Il2cpp {
         return il2cpp_method_get_param_name(method, index);
     }
 
-    const char *GetMethodName(MethodInfo *method) {
-        return il2cpp_method_get_name(method);
-    }
+    const char *GetMethodName(MethodInfo *method) { return il2cpp_method_get_name(method); }
 
-    const char *GetClassName(Il2CppClass *klass) {
-        return il2cpp_class_get_name(klass);
-    }
+    const char *GetClassName(Il2CppClass *klass) { return il2cpp_class_get_name(klass); }
 
-    const char *GetClassNamespace(Il2CppClass *klass) {
-        return il2cpp_class_get_namespace(klass);
-    }
+    const char *GetClassNamespace(Il2CppClass *klass) { return il2cpp_class_get_namespace(klass); }
 
-    uintptr_t GetFieldOffset(FieldInfo *field) {
-        return il2cpp_field_get_offset(field);
-    }
+    uintptr_t GetFieldOffset(FieldInfo *field) { return il2cpp_field_get_offset(field); }
 
     void forEachClass(Il2CppClass *klass, void *classesPtr) {
         auto classes = *(std::vector<Il2CppClass *> *) classesPtr;
@@ -576,9 +561,9 @@ namespace Il2cpp {
         return classes;
     }
 
-    Il2CppType *GetClassType(Il2CppClass *klass) {
-        return il2cpp_class_get_type(klass);
-    }
+    Il2CppType *GetClassType(Il2CppClass *klass) { return il2cpp_class_get_type(klass); }
+
+    bool GetClassIsGeneric(Il2CppClass *klass) { return il2cpp_class_is_generic(klass); }
 
     Il2CppType *GetMethodReturnType(MethodInfo *method) {
         return il2cpp_method_get_return_type(method);
@@ -588,57 +573,45 @@ namespace Il2cpp {
         return il2cpp_method_get_param(method, index);
     }
 
-    bool GetIsMethodGeneric(MethodInfo *method) {
-        il2cpp_method_is_generic(method);
-    }
+    bool GetIsMethodGeneric(MethodInfo *method) { il2cpp_method_is_generic(method); }
 
-    bool GetIsMethodInflated(MethodInfo *method) {
-        return il2cpp_method_is_inflated(method);
-    }
+    bool GetIsMethodInflated(MethodInfo *method) { return il2cpp_method_is_inflated(method); }
 
     Il2CppReflectionMethod *GetMethodObject(MethodInfo *method, Il2CppClass *refclass) {
         return il2cpp_method_get_object(method, refclass);
     }
 
-    MethodInfo *GetMethodFromReflection(Il2CppReflectionMethod *method) {
-        return il2cpp_method_get_from_reflection(method);
+    MethodInfo *GetMethodFromReflection(
+            Il2CppReflectionMethod *method) { return il2cpp_method_get_from_reflection(method); }
+
+    uint32_t GetMethodGenericCount(MethodInfo *method) {
+        auto obj = method->getObject();
+        auto args = obj->invoke_method<Il2CppArray<Il2CppObject *> *>("GetGenericArguments");
+        return args->length();
     }
 
-    Il2CppClass *GetClassFromType(Il2CppType *type) {
-        return il2cpp_class_from_type(type);
+    Il2CppClass *GetClassFromType(Il2CppType *type) { return il2cpp_class_from_type(type); }
+
+    Il2CppClass *GetTypeClass(Il2CppType *type) {
+        return il2cpp_type_get_class_or_element_class(type);
     }
 
-    bool GetTypeIsPointer(Il2CppType *type) {
-        return il2cpp_type_is_pointer_type(type);
-    }
+    bool GetTypeIsPointer(Il2CppType *type) { return il2cpp_type_is_pointer_type(type); }
 
-    Il2CppType *GetFieldType(FieldInfo *field) {
-        return il2cpp_field_get_type(field);
-    }
+    Il2CppType *GetFieldType(FieldInfo *field) { return il2cpp_field_get_type(field); }
 
-    const char *GetFieldName(FieldInfo *field) {
-        return il2cpp_field_get_name(field);
-    }
+    const char *GetFieldName(FieldInfo *field) { return il2cpp_field_get_name(field); }
 
-    const char *GetTypeName(Il2CppType *type) {
-        return il2cpp_type_get_name(type);
-    }
+    const char *GetTypeName(Il2CppType *type) { return il2cpp_type_get_name(type); }
 
-    Il2CppObject *GetTypeObject(Il2CppType *type) {
-        return il2cpp_type_get_object(type);
-    }
+    Il2CppObject *GetTypeObject(Il2CppType *type) { return il2cpp_type_get_object(type); }
 
-    const char *GetChars(Il2CppString *str) {
-        return reinterpret_cast<const char *>(il2cpp_string_chars(str));
-    }
+    const char *
+    GetChars(Il2CppString *str) { return reinterpret_cast<const char *>(il2cpp_string_chars(str)); }
 
-    const char *GetImageName(Il2CppImage *image) {
-        return il2cpp_image_get_name(image);
-    }
+    const char *GetImageName(Il2CppImage *image) { return il2cpp_image_get_name(image); }
 
-    uint32_t GetArrayLength(_Il2CppArray *array) {
-        return il2cpp_array_length(array);
-    }
+    uint32_t GetArrayLength(_Il2CppArray *array) { return il2cpp_array_length(array); }
 
     _Il2CppArray *ArrayNew(Il2CppClass *elementTypeInfo, il2cpp_array_size_t length) {
         return il2cpp_array_new(elementTypeInfo, length);

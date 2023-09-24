@@ -31,6 +31,7 @@ namespace Il2cpp {
     const char *GetClassNamespace(Il2CppClass *klass);
     std::vector<Il2CppClass *> GetClasses();
     Il2CppType* GetClassType(Il2CppClass* klass);
+    bool GetClassIsGeneric(Il2CppClass* klass);
 
     //object
     uint32_t GetObjectSize(Il2CppObject *object);
@@ -48,6 +49,7 @@ namespace Il2cpp {
     bool GetIsMethodInflated(MethodInfo* method);
     Il2CppReflectionMethod* GetMethodObject(MethodInfo* method,Il2CppClass* refclass = nullptr);
     MethodInfo* GetMethodFromReflection(Il2CppReflectionMethod * method);
+    uint32_t GetMethodGenericCount(MethodInfo* method);
 
     //field
     void GetFieldValue(Il2CppObject *object, FieldInfo *field, void *outValue);
@@ -61,6 +63,7 @@ namespace Il2cpp {
 
     //type
     Il2CppClass * GetClassFromType(Il2CppType *type);
+    Il2CppClass * GetTypeClass(Il2CppType *type);
     bool GetTypeIsPointer(Il2CppType *type);
     const char* GetTypeName(Il2CppType* type);
     Il2CppObject * GetTypeObject(Il2CppType* type);

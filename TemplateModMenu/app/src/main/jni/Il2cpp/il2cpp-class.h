@@ -6,6 +6,7 @@
 #include "Dobby/include/dobby.h"
 #include "Includes/Logger.h"
 
+
 typedef uint16_t Il2CppChar;
 typedef uintptr_t il2cpp_array_size_t;
 typedef int32_t TypeDefinitionIndex;
@@ -115,6 +116,16 @@ typedef enum Il2CppTypeEnum {
     IL2CPP_TYPE_IL2CPP_TYPE_INDEX = 0xff
 } Il2CppTypeEnum;
 
+//forward definitions
+namespace Il2cpp {
+    //@formatter:off
+    void GetFieldValue(Il2CppObject *object, FieldInfo *field, void *outValue);
+    void GetFieldStaticValue(FieldInfo *field, void *outValue);
+    void SetFieldValue(Il2CppObject *object, FieldInfo *field, void *newValue);
+    void SetFieldStaticValue(FieldInfo *field, void *outValue);
+    //@formatter:on
+}
+
 struct Il2CppType {
     union {
         void *dummy;
@@ -140,14 +151,9 @@ struct Il2CppType {
 struct MethodInfo {
     void *methodPointer;//Il2CppMethodPointer
 
-    template<typename T, typename... Args>
-    T invoke(Il2CppObject *instance, Args &&... args);
+    MethodInfo *inflate(std::initializer_list<Il2CppClass *> types);
 
-    template<typename T, typename... Args>
-    T invoke_static(Args &&... args);
-
-    template<typename T, typename... Args>
-    T invoke(Il2CppObject *instance);
+    Il2CppObject *getObject();
 
     template<typename Func>
     void *replace(Func func);
@@ -158,10 +164,23 @@ struct MethodInfo {
 
     std::vector<std::pair<const char *, Il2CppType *>> getParamsInfo(); //param name, param type
 
+    template<typename T, typename... Args>
+    T invoke_static(Args &&... args);
+
 private:
+    template<typename T, typename... Args>
+    T invoke(Il2CppObject *instance, Args &&... args);
+
+    template<typename T, typename... Args>
+    T invoke(Il2CppObject *instance);
+
     static bool _isAlreadyHooked(uintptr_t ptr);
 
-    static void _addToHookedMap(uintptr_t ptr);
+    static void _addToHookedMap(uintptr_t ptr, uintptr_t oPtr);
+
+    static uintptr_t _getHookedMap(uintptr_t ptr);
+
+    friend struct Il2CppObject;
 };
 
 
@@ -228,6 +247,8 @@ struct Il2CppClass {
 
     Il2CppImage *getImage();
 
+    bool isGeneric();
+
     std::vector<MethodInfo *> getMethods();
 
     const char *getName();
@@ -239,32 +260,28 @@ struct Il2CppClass {
 
 struct FieldInfo {
 
-    uintptr_t getValue(Il2CppObject *instance);
-
-    uintptr_t getStaticValue();
-
-    void setStaticValue(void *value);
-
-    void setValue(Il2CppObject *instance, void *value);
-
     template<typename T>
     T getValue(Il2CppObject *instance) {
-        return (T) getValue(instance);
+        T value;
+        Il2cpp::GetFieldValue(instance, this, &value);
+        return value;
     }
 
     template<typename T>
     T getStaticValue() {
-        return (T) getStaticValue();
+        T value;
+        Il2cpp::GetFieldStaticValue(this, &value);
+        return value;
     }
 
     template<typename T>
     void setValue(Il2CppObject *instance, T value) {
-        setValue(instance, (void *) value);
+        Il2cpp::SetFieldValue(instance, this, &value);
     }
 
     template<typename T>
     void setStaticValue(T value) {
-        setStaticValue((void *) value);
+        Il2cpp::SetFieldStaticValue(this, &value);
     }
 
     uintptr_t getOffset();
@@ -340,29 +357,33 @@ void *MethodInfo::replace(T func) {
         LOGD("Already hooked");
         return nullptr;
     }
-    DobbyHook(methodPointer, (void *) func, &methodPointer);
-    _addToHookedMap((uintptr_t) methodPointer);
-    return methodPointer;
+    void *orig;
+    DobbyHook(methodPointer, (void *) func, &orig);
+    _addToHookedMap((uintptr_t) methodPointer, (uintptr_t) orig);
+    return orig;
 }
 
 template<typename T, typename... Args>
 T MethodInfo::invoke_static(Args &&... args) {
     using Invoker = T(*)(Args..., MethodInfo *);
-    auto invoker = reinterpret_cast<Invoker>(this->methodPointer);
+    auto address = _getHookedMap((uintptr_t) this->methodPointer);
+    auto invoker = reinterpret_cast<Invoker>(address);
     return invoker(std::forward<Args>(args)..., this);
 }
 
 template<typename T, typename... Args>
 T MethodInfo::invoke(Il2CppObject *instance) {
     using Invoker = T(*)(Il2CppObject *, MethodInfo *);
-    auto invoker = reinterpret_cast<Invoker>(this->methodPointer);
+    auto address = _getHookedMap((uintptr_t) this->methodPointer);
+    auto invoker = reinterpret_cast<Invoker>(address);
     return invoker(instance, this);
 }
 
 template<typename T, typename... Args>
 T MethodInfo::invoke(Il2CppObject *instance, Args &&... args) {
     using Invoker = T(*)(Il2CppObject *, Args..., MethodInfo *);
-    auto invoker = reinterpret_cast<Invoker>(this->methodPointer);
+    auto address = _getHookedMap((uintptr_t) this->methodPointer);
+    auto invoker = reinterpret_cast<Invoker>(address);
     return invoker(instance, std::forward<Args>(args)..., this);
 }
 
