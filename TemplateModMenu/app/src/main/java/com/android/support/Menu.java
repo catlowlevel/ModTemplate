@@ -72,9 +72,9 @@ public class Menu {
 
     int TEXT_COLOR = Color.parseColor("#FE4057");
     int TEXT_COLOR_2 = Color.parseColor("#FFFFFF");
-    int BTN_COLOR = Color.parseColor("#2A2532"); 
-    int MENU_BG_COLOR = Color.parseColor("#EE1C2A35"); 
-    int MENU_FEATURE_BG_COLOR = Color.parseColor("#DD141C22"); 
+    int BTN_COLOR = Color.parseColor("#262C33");
+    int MENU_BG_COLOR = Color.parseColor("#EE1C2A35");
+    int MENU_FEATURE_BG_COLOR = Color.parseColor("#DD141C22");
 
     // Rest of the variables can remain the same
     int MENU_WIDTH = 290;
@@ -85,13 +85,14 @@ public class Menu {
     int ICON_SIZE = 45; // Change both width and height of the image
     float ICON_ALPHA = 0.7f; // Transparent
     int ToggleON = Color.parseColor("#FE4057");
-    int ToggleOFF = Color.parseColor("#2A2532");
+    int ToggleOFF = Color.parseColor("#BF6570");
     int BtnON = Color.parseColor("#FE4057");
-    int BtnOFF = Color.parseColor("#2A2532");
+    int BtnOFF = Color.parseColor("#BF6570");
     int CategoryBG = Color.parseColor("#2F3D4C");
     int SeekBarColor = Color.parseColor("#FE4057");
     int SeekBarProgressColor = Color.parseColor("#FE4057");
     int CheckBoxColor = Color.parseColor("#FE4057");
+    int OtherBG = Color.parseColor("#262C33");
     int RadioColor = Color.parseColor("#FE4057");
     String NumberTxtColor = "#FE4057";
 
@@ -526,6 +527,11 @@ public class Menu {
 
     private void Switch(LinearLayout linLayout, final int featNum, final String featName, boolean swiOn) {
         final Switch switchR = new Switch(getContext);
+
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT);
+        layoutParams.setMargins(0, 2, 0, 2);
+        switchR.setLayoutParams(layoutParams);
+        switchR.setBackgroundColor(OtherBG);
         ColorStateList buttonStates = new ColorStateList(
                 new int[][]{
                         new int[]{-android.R.attr.state_enabled},
@@ -896,11 +902,15 @@ public class Menu {
 
     private void CheckBox(LinearLayout linLayout, final int featNum, final String featName, boolean switchedOn) {
         final CheckBox checkBox = new CheckBox(getContext);
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT);
+        layoutParams.setMargins(0, 2, 0, 2);
+        checkBox.setLayoutParams(layoutParams);
         checkBox.setText(featName);
         checkBox.setTextColor(TEXT_COLOR_2);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
             checkBox.setButtonTintList(ColorStateList.valueOf(CheckBoxColor));
         checkBox.setChecked(Preferences.loadPrefBool(featName, featNum, switchedOn));
+        checkBox.setBackgroundColor(OtherBG);
         checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
