@@ -24,14 +24,14 @@
 
 Il2CppImage *g_Image = nullptr;
 
-#define REPLACE_KLASS_NAME(klass, name, method) do {     \
+#define REPLACE_NAME_KLASS(klass, name, method) do {     \
     auto m = klass->getMethod(name);                     \
     auto old = m->methodPointer;                         \
     auto n = m->replace(method);                         \
     LOGD("%s (%llX -> %llX) HOOKED", name, old, n);      \
 } while(0)
 #define REPLACE_KLASS(klass, method) REPLACE_KLASS_NAME(klass, #method, method)
-#define REPLACE_NAME(className, name, method) REPLACE_KLASS_NAME(g_Image->getClass(className), name, method)
+#define REPLACE_NAME(className, name, method) REPLACE_NAME_KLASS(g_Image->getClass(className), name, method)
 #define REPLACE(className, method) REPLACE_NAME(className, #method, method)
 
 
