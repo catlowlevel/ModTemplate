@@ -440,7 +440,7 @@ namespace Il2cpp {
         if (!curr) {
             LOGI("Foreign thread!");
         } else {
-            LOGI("Already Attached -> %llX", curr);
+            LOGI("Already Attached -> %p", curr);
             return true;
         }
         LOGI("Attaching Thread");
