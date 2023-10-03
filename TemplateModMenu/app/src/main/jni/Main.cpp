@@ -24,12 +24,13 @@
 
 Il2CppImage *g_Image = nullptr;
 
-#define REPLACE_NAME_KLASS(klass, name, method) do {     \
-    auto m = klass->getMethod(name);                     \
-    auto old = m->methodPointer;                         \
-    auto n = m->replace(method);                         \
-    LOGD("%s (%p -> %p) HOOKED", name, old, n);      \
-} while(0)
+#define REPLACE_NAME_KLASS(klass, name, method) [&] {     \
+    MethodInfo* m = klass->getMethod(name);              \
+    void* old = m->methodPointer;                        \
+    void* n = m->replace(method);                        \
+    LOGD("%s (%p -> %p) HOOKED", name, old, n);          \
+    return n;                                            \
+}();
 #define REPLACE_KLASS(klass, method) REPLACE_KLASS_NAME(klass, #method, method)
 #define REPLACE_NAME(className, name, method) REPLACE_NAME_KLASS(g_Image->getClass(className), name, method)
 #define REPLACE(className, method) REPLACE_NAME(className, #method, method)
@@ -52,11 +53,11 @@ void *hack_thread(void *) {
     LOGD("HOOKING...");
 //    g_Image = Il2cpp::GetAssembly("Game.Domain")->getImage();
 //
-//    REPLACE_NAME("Game.Domain.Models.Heroes.HeroModel", "Initialize", HeroModelInitialize);
+//    REPLACE_NAME("Game.Domain.Models.Heroes.HeroModel", "Initialize", HeroModel_Initialize);
 //    REPLACE_NAME("Game.Domain.Models.Currencies.CurrencyModel", "IsEnough",
-//                 CurrencyModelIsEnough);
+//                 CurrencyModel_IsEnough);
 //    REPLACE_NAME("Game.Domain.UserData.Currencies.CurrencyData", "RemoveAmount",
-//                 CurrencyDataRemoveAmount);
+//                 CurrencyData_RemoveAmount);
 
 
     LOGD("HOOKED!");
