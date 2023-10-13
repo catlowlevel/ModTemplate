@@ -2,10 +2,9 @@
 
 #include <cstdint>
 #include <vector>
-//#include "And64InlineHook/And64InlineHook.hpp"
+// #include "And64InlineHook/And64InlineHook.hpp"
 #include "Dobby/include/dobby.h"
 #include "Includes/Logger.h"
-
 
 typedef uint16_t Il2CppChar;
 typedef uintptr_t il2cpp_array_size_t;
@@ -16,7 +15,7 @@ typedef char Il2CppNativeChar;
 typedef struct Il2CppMemoryCallbacks Il2CppMemoryCallbacks;
 typedef struct Il2CppImage Il2CppImage;
 typedef struct Il2CppClass Il2CppClass;
-//typedef struct Il2CppArrayBounds Il2CppArrayBounds;
+// typedef struct Il2CppArrayBounds Il2CppArrayBounds;
 typedef struct Il2CppAssembly Il2CppAssembly;
 typedef struct Il2CppArrayType Il2CppArrayType;
 typedef struct Il2CppGenericClass Il2CppGenericClass;
@@ -24,6 +23,7 @@ typedef struct Il2CppReflectionType Il2CppReflectionType;
 typedef struct MonitorData MonitorData;
 typedef Il2CppClass Il2CppVTable;
 typedef struct EventInfo EventInfo;
+typedef struct FieldInfo FieldInfo;
 typedef struct FieldInfo FieldInfo;
 typedef struct PropertyInfo PropertyInfo;
 typedef struct Il2CppDomain Il2CppDomain;
@@ -48,24 +48,27 @@ typedef void *(*il2cpp_liveness_reallocate_callback)(void *ptr, size_t size, voi
 
 typedef void (*Il2CppFrameWalkFunc)(const Il2CppStackFrameInfo *info, void *user_data);
 
-typedef size_t(*Il2CppBacktraceFunc)(Il2CppMethodPointer *buffer, size_t maxSize);
+typedef size_t (*Il2CppBacktraceFunc)(Il2CppMethodPointer *buffer, size_t maxSize);
 
 typedef const Il2CppNativeChar *(*Il2CppSetFindPlugInCallback)(const Il2CppNativeChar *);
 
 typedef void (*Il2CppLogCallback)(const char *);
 
-typedef enum {
+typedef enum
+{
     IL2CPP_UNHANDLED_POLICY_LEGACY,
     IL2CPP_UNHANDLED_POLICY_CURRENT
 } Il2CppRuntimeUnhandledExceptionPolicy;
 
-typedef enum {
+typedef enum
+{
     IL2CPP_GC_MODE_DISABLED = 0,
     IL2CPP_GC_MODE_ENABLED = 1,
     IL2CPP_GC_MODE_MANUAL = 2
 } Il2CppGCMode;
 
-typedef enum Il2CppStat {
+typedef enum Il2CppStat
+{
     IL2CPP_STAT_NEW_OBJECT_COUNT,
     IL2CPP_STAT_INITIALIZED_CLASS_COUNT,
     IL2CPP_STAT_METHOD_COUNT,
@@ -76,7 +79,8 @@ typedef enum Il2CppStat {
     IL2CPP_STAT_INFLATED_TYPE_COUNT,
 } Il2CppStat;
 
-typedef enum Il2CppTypeEnum {
+typedef enum Il2CppTypeEnum
+{
     IL2CPP_TYPE_END = 0x00,
     IL2CPP_TYPE_VOID = 0x01,
     IL2CPP_TYPE_BOOLEAN = 0x02,
@@ -116,18 +120,22 @@ typedef enum Il2CppTypeEnum {
     IL2CPP_TYPE_IL2CPP_TYPE_INDEX = 0xff
 } Il2CppTypeEnum;
 
-//forward definitions
-namespace Il2cpp {
+// forward definitions
+namespace Il2cpp
+{
     //@formatter:off
     void GetFieldValue(Il2CppObject *object, FieldInfo *field, void *outValue);
     void GetFieldStaticValue(FieldInfo *field, void *outValue);
     void SetFieldValue(Il2CppObject *object, FieldInfo *field, void *newValue);
     void SetFieldStaticValue(FieldInfo *field, void *outValue);
+    Il2CppObject *GetBoxedValue(Il2CppClass *klass, void *value);
     //@formatter:on
-}
+} // namespace Il2cpp
 
-struct Il2CppType {
-    union {
+struct Il2CppType
+{
+    union
+    {
         void *dummy;
         TypeDefinitionIndex klassIndex;
         const Il2CppType *type;
@@ -135,11 +143,11 @@ struct Il2CppType {
         GenericParameterIndex genericParameterIndex;
         Il2CppGenericClass *generic_class;
     } data;
-    unsigned int attrs: 16;
-    Il2CppTypeEnum type: 8;
-    unsigned int num_mods: 6;
-    unsigned int byref: 1;
-    unsigned int pinned: 1;
+    unsigned int attrs : 16;
+    Il2CppTypeEnum type : 8;
+    unsigned int num_mods : 6;
+    unsigned int byref : 1;
+    unsigned int pinned : 1;
 
     bool isPointer();
 
@@ -148,30 +156,31 @@ struct Il2CppType {
     Il2CppClass *getClass();
 };
 
-struct MethodInfo {
-    void *methodPointer;//Il2CppMethodPointer
+struct MethodInfo
+{
+    void *methodPointer; // Il2CppMethodPointer
 
     MethodInfo *inflate(std::initializer_list<Il2CppClass *> types);
 
     Il2CppObject *getObject();
 
-    template<typename Func>
+    template <typename Func>
     void *replace(Func func);
 
     const char *getName();
 
     Il2CppType *getReturnType();
 
-    std::vector<std::pair<const char *, Il2CppType *>> getParamsInfo(); //param name, param type
+    std::vector<std::pair<const char *, Il2CppType *>> getParamsInfo(); // param name, param type
 
-    template<typename T, typename... Args>
-    T invoke_static(Args &&... args);
+    template <typename T, typename... Args>
+    T invoke_static(Args &&...args);
 
-private:
-    template<typename T, typename... Args>
-    T invoke(Il2CppObject *instance, Args &&... args);
+  private:
+    template <typename T, typename... Args>
+    T invoke(Il2CppObject *instance, Args &&...args);
 
-    template<typename T, typename... Args>
+    template <typename T, typename... Args>
     T invoke(Il2CppObject *instance);
 
     static bool _isAlreadyHooked(uintptr_t ptr);
@@ -183,60 +192,73 @@ private:
     friend struct Il2CppObject;
 };
 
+template <typename T>
+struct ValueType
+{
+    T value;
+    Il2CppObject *box(Il2CppImage *image, const char *klassName);
+    Il2CppObject *box(Il2CppClass *klass);
+};
 
-struct Il2CppObject {
-    union {
+struct Il2CppObject
+{
+    union
+    {
         Il2CppClass *klass;
         Il2CppVTable *vtable;
     };
     MonitorData *monitor;
 
-    template<typename T, typename... Args>
-    T invoke_method(MethodInfo *method, Args &&... args);
+    template <typename T, typename... Args>
+    T invoke_method(MethodInfo *method, Args &&...args);
 
-    template<typename T>
+    template <typename T>
     T invoke_method(MethodInfo *method);
 
-    template<typename T>
+    template <typename T>
     T invoke_method(const char *methodName);
 
-    template<typename T, typename... Args>
+    template <typename T, typename... Args>
     T invoke_method(const char *methodName, Args... args);
 
-    template<typename T>
+    template <typename T>
     T getField(const char *name);
 
-    template<typename T>
+    template <typename T>
     void setField(const char *name, T newValue);
 
-private:
+  private:
     uintptr_t _getFieldOffset(const char *name);
 };
 
-
-struct _Il2CppArray : Il2CppObject {
-    void *bounds;//Il2CppArrayBounds
-    il2cpp_array_size_t max_length; //maybe same as length
+struct _Il2CppArray : Il2CppObject
+{
+    void *bounds;                   // Il2CppArrayBounds
+    il2cpp_array_size_t max_length; // maybe same as length
 
     uint32_t length();
 };
 
-template<typename T>
-struct Il2CppArray : _Il2CppArray {
+template <typename T>
+struct Il2CppArray : _Il2CppArray
+{
     T data[32];
 };
 
-struct Il2CppAssembly {
+struct Il2CppAssembly
+{
     Il2CppImage *getImage();
 };
 
-struct Il2CppImage {
+struct Il2CppImage
+{
     Il2CppClass *getClass(const char *name);
 
     const char *getName();
 };
 
-struct Il2CppClass {
+struct Il2CppClass
+{
     MethodInfo *getMethod(const char *name);
 
     MethodInfo *findMethod(const char *name, size_t idx = 0);
@@ -256,31 +278,38 @@ struct Il2CppClass {
     const char *getNamespace();
 
     size_t getSize();
+
+    Il2CppObject *New();
 };
 
-struct FieldInfo {
+struct FieldInfo
+{
 
-    template<typename T>
-    T getValue(Il2CppObject *instance) {
+    template <typename T>
+    T getValue(Il2CppObject *instance)
+    {
         T value;
         Il2cpp::GetFieldValue(instance, this, &value);
         return value;
     }
 
-    template<typename T>
-    T getStaticValue() {
+    template <typename T>
+    T getStaticValue()
+    {
         T value;
         Il2cpp::GetFieldStaticValue(this, &value);
         return value;
     }
 
-    template<typename T>
-    void setValue(Il2CppObject *instance, T value) {
+    template <typename T>
+    void setValue(Il2CppObject *instance, T value)
+    {
         Il2cpp::SetFieldValue(instance, this, &value);
     }
 
-    template<typename T>
-    void setStaticValue(T value) {
+    template <typename T>
+    void setStaticValue(T value)
+    {
         Il2cpp::SetFieldStaticValue(this, &value);
     }
 
@@ -291,113 +320,142 @@ struct FieldInfo {
     const char *getName();
 };
 
-struct Il2CppString : Il2CppObject {
-//    int32_t len;
-//    char chars[32];
+struct Il2CppString : Il2CppObject
+{
+    //    int32_t len;
+    //    char chars[32];
 
     std::string to_string();
 
     const char *to_char();
 };
 
-template<typename T>
-struct List : Il2CppObject {
+template <typename T>
+struct List : Il2CppObject
+{
     using Iter = T;
 
-    int size() {
+    int size()
+    {
         return this->invoke_method<int>("get_Count");
     }
 
-    T get(int index) {
+    T get(int index)
+    {
         return this->invoke_method<T>("get_Item", index);
     }
 
-    Iter begin() {
+    Iter begin()
+    {
         return get(0);
     }
 
-    Iter end() {
+    Iter end()
+    {
         return get(size());
     }
 };
 
 //////////////////////////USER TYPES/////////////////////////////
-struct BigDouble {
+struct BigDouble
+{
     double numerator;
     int64_t exponent;
 };
 
-
 //////////////////////////TEMPLATE IMPL/////////////////////////////
 
-template<typename T>
-T Il2CppObject::invoke_method(MethodInfo *method) {
+template <typename T>
+T Il2CppObject::invoke_method(MethodInfo *method)
+{
     return method->invoke<T>(this);
 }
 
-template<typename T, typename... Args>
-T Il2CppObject::invoke_method(const char *methodName, Args... args) {
+template <typename T, typename... Args>
+T Il2CppObject::invoke_method(const char *methodName, Args... args)
+{
     MethodInfo *method = klass->getMethod(methodName);
     return invoke_method<T>(method, std::forward<Args>(args)...);
 }
 
-template<typename T>
-T Il2CppObject::invoke_method(const char *methodName) {
+template <typename T>
+T Il2CppObject::invoke_method(const char *methodName)
+{
     return invoke_method<T>(klass->getMethod(methodName));
 }
 
-template<typename T, typename... Args>
-T Il2CppObject::invoke_method(MethodInfo *method, Args &&... args) {
+template <typename T, typename... Args>
+T Il2CppObject::invoke_method(MethodInfo *method, Args &&...args)
+{
     return method->invoke<T>(this, std::forward<Args>(args)...);
 }
 
-template<typename T>
-void *MethodInfo::replace(T func) {
-    if (_isAlreadyHooked((uintptr_t) methodPointer)) {
+template <typename T>
+void *MethodInfo::replace(T func)
+{
+    if (_isAlreadyHooked((uintptr_t)methodPointer))
+    {
         LOGD("Already hooked");
         return nullptr;
     }
     void *orig;
-    DobbyHook(methodPointer, (void *) func, &orig);
-    _addToHookedMap((uintptr_t) methodPointer, (uintptr_t) orig);
+    DobbyHook(methodPointer, (void *)func, &orig);
+    _addToHookedMap((uintptr_t)methodPointer, (uintptr_t)orig);
     return orig;
 }
 
-template<typename T, typename... Args>
-T MethodInfo::invoke_static(Args &&... args) {
-    using Invoker = T(*)(Args..., MethodInfo *);
-    auto address = _getHookedMap((uintptr_t) this->methodPointer);
+template <typename T, typename... Args>
+T MethodInfo::invoke_static(Args &&...args)
+{
+    using Invoker = T (*)(Args..., MethodInfo *);
+    auto address = _getHookedMap((uintptr_t)this->methodPointer);
     auto invoker = reinterpret_cast<Invoker>(address);
     return invoker(std::forward<Args>(args)..., this);
 }
 
-template<typename T, typename... Args>
-T MethodInfo::invoke(Il2CppObject *instance) {
-    using Invoker = T(*)(Il2CppObject *, MethodInfo *);
-    auto address = _getHookedMap((uintptr_t) this->methodPointer);
+template <typename T, typename... Args>
+T MethodInfo::invoke(Il2CppObject *instance)
+{
+    using Invoker = T (*)(Il2CppObject *, MethodInfo *);
+    auto address = _getHookedMap((uintptr_t)this->methodPointer);
     auto invoker = reinterpret_cast<Invoker>(address);
     return invoker(instance, this);
 }
 
-template<typename T, typename... Args>
-T MethodInfo::invoke(Il2CppObject *instance, Args &&... args) {
-    using Invoker = T(*)(Il2CppObject *, Args..., MethodInfo *);
-    auto address = _getHookedMap((uintptr_t) this->methodPointer);
+template <typename T, typename... Args>
+T MethodInfo::invoke(Il2CppObject *instance, Args &&...args)
+{
+    using Invoker = T (*)(Il2CppObject *, Args..., MethodInfo *);
+    auto address = _getHookedMap((uintptr_t)this->methodPointer);
     auto invoker = reinterpret_cast<Invoker>(address);
     return invoker(instance, std::forward<Args>(args)..., this);
 }
 
-template<typename T>
-T Il2CppObject::getField(const char *name) {
+template <typename T>
+T Il2CppObject::getField(const char *name)
+{
     auto field = klass->getField(name);
     return field->getValue<T>(this);
-//        auto offset = _getFieldOffset(name);
-//        return (T) _getField(name);
-//        return (T) (this + offset);
+    //        auto offset = _getFieldOffset(name);
+    //        return (T) _getField(name);
+    //        return (T) (this + offset);
 }
 
-template<typename T>
-void Il2CppObject::setField(const char *name, T newValue) {
+template <typename T>
+void Il2CppObject::setField(const char *name, T newValue)
+{
     auto field = klass->getField(name);
     return field->setValue<T>(this, newValue);
+}
+
+template <typename T>
+Il2CppObject *ValueType<T>::box(Il2CppImage *image, const char *klassName)
+{
+    auto klass = image->getClass(klassName);
+    return box(klass);
+}
+template <typename T>
+Il2CppObject *ValueType<T>::box(Il2CppClass *klass)
+{
+    return Il2cpp::GetBoxedValue(klass, this);
 }

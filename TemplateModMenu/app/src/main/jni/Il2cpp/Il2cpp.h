@@ -7,7 +7,8 @@
 
 #include "il2cpp-class.h"
 
-namespace Il2cpp {
+namespace Il2cpp
+{
     //@formatter:off
 
     void Init();
@@ -20,69 +21,73 @@ namespace Il2cpp {
     Il2CppAssembly *GetAssembly(const char *name);
     Il2CppClass *GetClass(Il2CppImage *image, const char *name);
 
-    //class
+    // class
     FieldInfo *GetClassField(Il2CppClass *klass, const char *fieldName);
     FieldInfo *GetClassFields(Il2CppClass *klass, void **iter);
     MethodInfo *GetClassMethods(Il2CppClass *klass, void **iter);
     MethodInfo *GetClassMethod(Il2CppClass *klass, const char *name, int argsCount = -1);
-    Il2CppImage* GetClassImage(Il2CppClass *klass);
+    Il2CppImage *GetClassImage(Il2CppClass *klass);
     int32_t GetClassSize(Il2CppClass *klass);
-    const char* GetClassName(Il2CppClass *klass);
+    const char *GetClassName(Il2CppClass *klass);
     const char *GetClassNamespace(Il2CppClass *klass);
     std::vector<Il2CppClass *> GetClasses();
-    Il2CppType* GetClassType(Il2CppClass* klass);
-    bool GetClassIsGeneric(Il2CppClass* klass);
+    Il2CppType *GetClassType(Il2CppClass *klass);
+    bool GetClassIsGeneric(Il2CppClass *klass);
 
-    //object
+    // object
     uint32_t GetObjectSize(Il2CppObject *object);
+    Il2CppObject *NewObject(Il2CppClass *klass);
 
-    //image
+    // image
     const char *GetImageName(Il2CppImage *image);
 
-    //method
-    uint32_t GetMethodParamCount(MethodInfo* method);
-    const char* GetMethodParamName(MethodInfo* method, uint32_t index);
-    const char* GetMethodName(MethodInfo* method);
-    Il2CppType* GetMethodReturnType(MethodInfo* method);
-    Il2CppType* GetMethodParam(MethodInfo* method, uint32_t index);
-    bool GetIsMethodGeneric(MethodInfo* method);
-    bool GetIsMethodInflated(MethodInfo* method);
-    Il2CppReflectionMethod* GetMethodObject(MethodInfo* method,Il2CppClass* refclass = nullptr);
-    MethodInfo* GetMethodFromReflection(Il2CppReflectionMethod * method);
-    uint32_t GetMethodGenericCount(MethodInfo* method);
+    // method
+    uint32_t GetMethodParamCount(MethodInfo *method);
+    const char *GetMethodParamName(MethodInfo *method, uint32_t index);
+    const char *GetMethodName(MethodInfo *method);
+    Il2CppType *GetMethodReturnType(MethodInfo *method);
+    Il2CppType *GetMethodParam(MethodInfo *method, uint32_t index);
+    bool GetIsMethodGeneric(MethodInfo *method);
+    bool GetIsMethodInflated(MethodInfo *method);
+    Il2CppReflectionMethod *GetMethodObject(MethodInfo *method, Il2CppClass *refclass = nullptr);
+    MethodInfo *GetMethodFromReflection(Il2CppReflectionMethod *method);
+    uint32_t GetMethodGenericCount(MethodInfo *method);
 
-    //field
+    // field
     void GetFieldValue(Il2CppObject *object, FieldInfo *field, void *outValue);
     void GetFieldStaticValue(FieldInfo *field, void *outValue);
     void SetFieldValue(Il2CppObject *object, FieldInfo *field, void *newValue);
     void SetFieldStaticValue(FieldInfo *field, void *outValue);
-//    Il2CppObject *GetFieldValueObect(Il2CppObject *object, FieldInfo *field);
-    uintptr_t GetFieldOffset(FieldInfo* field);
-    Il2CppType* GetFieldType(FieldInfo* field);
-    const char* GetFieldName(FieldInfo* field);
+    //    Il2CppObject *GetFieldValueObect(Il2CppObject *object, FieldInfo *field);
+    uintptr_t GetFieldOffset(FieldInfo *field);
+    Il2CppType *GetFieldType(FieldInfo *field);
+    const char *GetFieldName(FieldInfo *field);
 
-    //type
-    Il2CppClass * GetClassFromType(Il2CppType *type);
-    Il2CppClass * GetTypeClass(Il2CppType *type);
+    // type
+    Il2CppClass *GetClassFromType(Il2CppType *type);
+    Il2CppClass *GetTypeClass(Il2CppType *type);
     bool GetTypeIsPointer(Il2CppType *type);
-    const char* GetTypeName(Il2CppType* type);
-    Il2CppObject * GetTypeObject(Il2CppType* type);
+    const char *GetTypeName(Il2CppType *type);
+    Il2CppObject *GetTypeObject(Il2CppType *type);
 
-    //string
-    const char* GetChars(Il2CppString* str); //returns wide char
+    // string
+    const char *GetChars(Il2CppString *str); // returns wide char
+    Il2CppString *NewString(const char *str);
 
-    //array
-    uint32_t GetArrayLength(_Il2CppArray* array);
-    _Il2CppArray* ArrayNew(Il2CppClass * elementTypeInfo, il2cpp_array_size_t length);
-    template<typename T>
-    Il2CppArray<T>* ArrayNewGeneric(Il2CppClass * elementTypeInfo, il2cpp_array_size_t length){
-        return static_cast<Il2CppArray<T>*>(ArrayNew(elementTypeInfo,length));
+    // array
+    uint32_t GetArrayLength(_Il2CppArray *array);
+    _Il2CppArray *ArrayNew(Il2CppClass *elementTypeInfo, il2cpp_array_size_t length);
+    template <typename T>
+    Il2CppArray<T> *ArrayNewGeneric(Il2CppClass *elementTypeInfo, il2cpp_array_size_t length)
+    {
+        return static_cast<Il2CppArray<T> *>(ArrayNew(elementTypeInfo, length));
     }
 
-
+    // other
+    Il2CppObject *GetBoxedValue(Il2CppClass *klass, void *value);
 
     //@formatter:on
-//void il2cpp_dump(const char *outDir);
-}
+    // void il2cpp_dump(const char *outDir);
+} // namespace Il2cpp
 
-#endif //ZYGISK_IL2CPPDUMPER_IL2CPP_DUMP_H
+#endif // ZYGISK_IL2CPPDUMPER_IL2CPP_DUMP_H

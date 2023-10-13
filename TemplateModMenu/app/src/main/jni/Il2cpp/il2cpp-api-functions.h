@@ -1,7 +1,13 @@
 #ifndef DO_API_NO_RETURN
-#define DO_API_NO_RETURN(r, n, p) DO_API(r,n,p)
+#define DO_API_NO_RETURN(r, n, p) DO_API(r, n, p)
 #endif
 
+#ifndef DO_API
+#define DO_API(r, n, p) r(*n) p
+#include "il2cpp-class.h"
+#endif
+
+// clang-format off
 DO_API(int, il2cpp_init, (const char* domain_name));
 DO_API(int, il2cpp_init_utf16, (const Il2CppChar * domain_name));
 DO_API(void, il2cpp_shutdown, ());
@@ -310,3 +316,4 @@ DO_API(void, il2cpp_class_set_userdata, (Il2CppClass * klass, void* userdata));
 DO_API(int, il2cpp_class_get_userdata_offset, ());
 
 DO_API(void, il2cpp_set_default_thread_affinity, (int64_t affinity_mask));
+// clang-format on
