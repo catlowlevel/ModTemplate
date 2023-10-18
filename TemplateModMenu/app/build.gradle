@@ -1,6 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
+    namespace "com.android.support"
     compileSdkVersion 30
     defaultConfig {
         applicationId "com.android.support"
