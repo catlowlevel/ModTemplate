@@ -34,12 +34,16 @@ MethodInfo *Il2CppClass::getMethod(const char *name)
     return Il2cpp::GetClassMethod(this, name);
 }
 
-std::vector<MethodInfo *> Il2CppClass::getMethods()
+std::vector<MethodInfo *> Il2CppClass::getMethods(const char *filter)
 {
     void *iter = nullptr;
     std::vector<MethodInfo *> methods{};
     while (auto method = Il2cpp::GetClassMethods(this, &iter))
     {
+        if (filter != nullptr && strstr(method->getName(), filter) == nullptr)
+        {
+            continue;
+        }
         methods.push_back(method);
     }
     return methods;

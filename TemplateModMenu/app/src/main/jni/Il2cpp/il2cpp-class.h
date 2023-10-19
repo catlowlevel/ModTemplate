@@ -271,7 +271,7 @@ struct Il2CppClass
 
     bool isGeneric();
 
-    std::vector<MethodInfo *> getMethods();
+    std::vector<MethodInfo *> getMethods(const char *filter = nullptr);
 
     const char *getName();
 
