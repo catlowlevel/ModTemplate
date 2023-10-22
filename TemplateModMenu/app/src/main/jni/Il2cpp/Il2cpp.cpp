@@ -437,6 +437,8 @@ void il2cpp_api_init(void *handle)
     //    auto domain = il2cpp_domain_get();
     //    il2cpp_thread_attach(domain);
 }
+
+bool g_DoLog = true;
 namespace Il2cpp
 {
     void Init()
@@ -482,7 +484,7 @@ namespace Il2cpp
     Il2CppAssembly *GetAssembly(const char *name)
     {
         auto result = il2cpp_domain_assembly_open(il2cpp_domain_get(), name);
-        if (!result)
+        if (!result && g_DoLog)
             LOGE("There's no assembly : %s", name);
         return result;
     }
@@ -490,7 +492,7 @@ namespace Il2cpp
     Il2CppImage *GetImage(Il2CppAssembly *assembly)
     {
         auto result = il2cpp_assembly_get_image(assembly);
-        if (!result)
+        if (!result && g_DoLog)
             LOGE("GetImage return nullptr");
         return result;
     }
@@ -512,7 +514,7 @@ namespace Il2cpp
         const std::string classNamespace = (dotIndex == std::string::npos) ? "" : nameStr.substr(0, dotIndex);
         const std::string className = nameStr.substr(dotIndex + 1);
         auto result = il2cpp_class_from_name(image, classNamespace.c_str(), className.c_str());
-        if (!result)
+        if (!result && g_DoLog)
             LOGE("There's no class : %s", name);
         return result;
     }
@@ -520,7 +522,7 @@ namespace Il2cpp
     MethodInfo *GetClassMethod(Il2CppClass *klass, const char *methodName, int argsCount)
     {
         auto result = il2cpp_class_get_method_from_name(klass, methodName, argsCount);
-        if (!result)
+        if (!result && g_DoLog)
             LOGE("There's no method : %s", methodName);
         return result;
     }
@@ -533,7 +535,7 @@ namespace Il2cpp
     FieldInfo *GetClassField(Il2CppClass *klass, const char *fieldName)
     {
         auto result = il2cpp_class_get_field_from_name(klass, fieldName);
-        if (!result)
+        if (!result && g_DoLog)
             LOGE("There's no field : %s", fieldName);
         return result;
     }
