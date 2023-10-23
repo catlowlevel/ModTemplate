@@ -552,7 +552,7 @@ namespace Il2cpp
     {
         auto result = il2cpp_class_get_method_from_name(klass, methodName, argsCount);
         if (!result && g_DoLog)
-            LOGE("There's no method : %s", methodName);
+            LOGE("There's no method : %s in %s", methodName, klass->getFullName().c_str());
         return result;
     }
 

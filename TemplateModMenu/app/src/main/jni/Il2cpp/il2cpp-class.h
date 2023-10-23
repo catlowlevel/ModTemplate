@@ -277,6 +277,8 @@ struct Il2CppClass
 
     const char *getNamespace();
 
+    std::string getFullName();
+
     size_t getSize();
 
     Il2CppObject *New();
