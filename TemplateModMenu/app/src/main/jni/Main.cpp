@@ -29,10 +29,19 @@ Il2CppImage *g_Image = nullptr;
         LOGD(OBFUSCATE("%s (%p -> %p) HOOKED"), name, old, n);                                                         \
         return n;                                                                                                      \
     }();
-#define REPLACE_NAME_KLASS(klass, name, method) REPLACE_NAME_METHOD(klass->getMethod(name), name, method)
-#define REPLACE_KLASS(klass, method) REPLACE_KLASS_NAME(klass, #method, method)
-#define REPLACE_NAME(className, name, method) REPLACE_NAME_KLASS(g_Image->getClass(className), name, method)
+#define REPLACE_NAME_METHOD_ORIG(methodInfo, method, orig)                                                             \
+    orig = (decltype(orig))REPLACE_NAME_METHOD(methodInfo, method)
+#define REPLACE_NAME_KLASS(klass, name, method)                                                                        \
+    REPLACE_NAME_METHOD(klass->getMethod(OBFUSCATE(name)), (const char *)OBFUSCATE(name), method)
+#define REPLACE_NAME_KLASS_ORIG(klass, name, method, orig)                                                             \
+    REPLACE_NAME_METHOD_ORIG(klass->getMethod(OBFUSCATE(name)), (const char *)OBFUSCATE(name), method, orig)
+#define REPLACE_KLASS(klass, method) REPLACE_NAME_KLASS(klass, #method, method)
+#define REPLACE_NAME(className, name, method)                                                                          \
+    REPLACE_NAME_KLASS(g_Image->getClass((const char *)OBFUSCATE(className)), name, method)
+#define REPLACE_NAME_ORIG(className, name, method, orig)                                                               \
+    REPLACE_NAME_KLASS_ORIG(g_Image->getClass(OBFUSCATE(className)), name, method, orig)
 #define REPLACE(className, method) REPLACE_NAME(className, #method, method)
+#define REPLACE_ORIG(className, method, orig) REPLACE_NAME_ORIG(className, #method, method, orig)
 
 void SampleHook(Il2CppObject *instance, int arg)
 {
