@@ -56,7 +56,7 @@ namespace Il2cpp
     Il2CppReflectionMethod *GetMethodObject(MethodInfo *method, Il2CppClass *refclass = nullptr);
     MethodInfo *GetMethodFromReflection(Il2CppReflectionMethod *method);
     uint32_t GetMethodGenericCount(MethodInfo *method);
-    MethodInfo *FindMethod(const char *klassName, const char *methodName, size_t argsCount = 1);
+    MethodInfo *FindMethod(const char *klassName, const char *methodName, size_t argsCount = -1);
 
     // field
     void GetFieldValue(Il2CppObject *object, FieldInfo *field, void *outValue);
