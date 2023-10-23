@@ -19,7 +19,7 @@ namespace Il2cpp
     Il2CppImage *GetCorlib();
     Il2CppImage *GetImage(const char *assemblyName);
     Il2CppAssembly *GetAssembly(const char *name);
-    Il2CppClass *GetClass(Il2CppImage *image, const char *name);
+    Il2CppClass *GetClass(Il2CppImage *image, const char *name, int subClass = 0);
 
     // class
     FieldInfo *GetClassField(Il2CppClass *klass, const char *fieldName);
@@ -31,6 +31,7 @@ namespace Il2cpp
     const char *GetClassName(Il2CppClass *klass);
     const char *GetClassNamespace(Il2CppClass *klass);
     std::vector<Il2CppClass *> GetClasses();
+    const std::tuple<Il2CppClass **, size_t> &GetSubClasses(Il2CppClass *klass);
     Il2CppType *GetClassType(Il2CppClass *klass);
     bool GetClassIsGeneric(Il2CppClass *klass);
 

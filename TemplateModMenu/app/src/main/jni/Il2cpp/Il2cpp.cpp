@@ -507,12 +507,27 @@ namespace Il2cpp
         return GetImage(GetAssembly(assemblyName));
     }
 
-    Il2CppClass *GetClass(Il2CppImage *image, const char *name)
+    // Example.Game.Class.SubClass.ExtraSubClass
+    // in case class name is "Example.Game.Class.SubClass", then subClass = 1
+    Il2CppClass *GetClass(Il2CppImage *image, const char *name, int subClass)
     {
         std::string nameStr = name;
-        const size_t dotIndex = nameStr.find_last_of('.');
-        const std::string classNamespace = (dotIndex == std::string::npos) ? "" : nameStr.substr(0, dotIndex);
+        size_t dotIndex = nameStr.find_last_of('.');
+        std::string classNamespace = (dotIndex == std::string::npos) ? "" : nameStr.substr(0, dotIndex);
+        bool isSubclass = subClass > 0;
         const std::string className = nameStr.substr(dotIndex + 1);
+        if (isSubclass) // not fully tested
+        {
+            auto klass = GetClass(image, classNamespace.c_str(), subClass - 1);
+            auto &[subKlass, len] = GetSubClasses(klass);
+            for (int i = 0; i < len; ++i)
+            {
+                if (strcmp(subKlass[i]->getName(), className.c_str()) == 0)
+                    return subKlass[i];
+            }
+            LOGE("There's no subclass : %s", name);
+            return nullptr;
+        }
         auto result = il2cpp_class_from_name(image, classNamespace.c_str(), className.c_str());
         if (!result && g_DoLog)
             LOGE("There's no class : %s", name);
@@ -630,6 +645,24 @@ namespace Il2cpp
         std::vector<Il2CppClass *> classes;
         il2cpp_class_for_each(forEachClass, &classes);
         return classes;
+    }
+
+    std::unordered_map<Il2CppClass *, std::tuple<Il2CppClass **, size_t>> subClassesCache;
+    const std::tuple<Il2CppClass **, size_t> &GetSubClasses(Il2CppClass *klass)
+    {
+        auto it = subClassesCache.find(klass);
+        if (it != subClassesCache.end())
+        {
+            return it->second;
+        }
+        std::vector<Il2CppClass *> subClasses{};
+        void *iter = nullptr;
+        while (auto subKlass = il2cpp_class_get_nested_types(klass, &iter))
+        {
+            subClasses.push_back(subKlass);
+        }
+        subClassesCache.insert(std::make_pair(klass, std::make_tuple(subClasses.data(), subClasses.size())));
+        return subClassesCache.at(klass);
     }
 
     Il2CppType *GetClassType(Il2CppClass *klass)
