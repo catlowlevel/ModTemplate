@@ -20,6 +20,8 @@ namespace Il2cpp
     Il2CppImage *GetImage(const char *assemblyName);
     Il2CppAssembly *GetAssembly(const char *name);
     Il2CppClass *GetClass(Il2CppImage *image, const char *name, int subClass = 0);
+    const std::tuple<Il2CppAssembly **, size_t> &GetAssemblies();
+    const std::vector<Il2CppImage *> &GetImages();
 
     // class
     FieldInfo *GetClassField(Il2CppClass *klass, const char *fieldName);
@@ -34,6 +36,7 @@ namespace Il2cpp
     const std::tuple<Il2CppClass **, size_t> &GetSubClasses(Il2CppClass *klass);
     Il2CppType *GetClassType(Il2CppClass *klass);
     bool GetClassIsGeneric(Il2CppClass *klass);
+    Il2CppClass *FindClass(const char *klassName);
 
     // object
     uint32_t GetObjectSize(Il2CppObject *object);
@@ -53,6 +56,7 @@ namespace Il2cpp
     Il2CppReflectionMethod *GetMethodObject(MethodInfo *method, Il2CppClass *refclass = nullptr);
     MethodInfo *GetMethodFromReflection(Il2CppReflectionMethod *method);
     uint32_t GetMethodGenericCount(MethodInfo *method);
+    MethodInfo *FindMethod(const char *klassName, const char *methodName, size_t argsCount = 1);
 
     // field
     void GetFieldValue(Il2CppObject *object, FieldInfo *field, void *outValue);

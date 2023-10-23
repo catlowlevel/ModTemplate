@@ -439,6 +439,20 @@ void il2cpp_api_init(void *handle)
 }
 
 bool g_DoLog = true;
+class PauseLog
+{
+  public:
+    PauseLog()
+    {
+        g_DoLog = false;
+    }
+    ~PauseLog()
+    {
+        g_DoLog = true;
+    }
+};
+#define PAUSE_LOG PauseLog _
+
 namespace Il2cpp
 {
     void Init()
@@ -675,6 +689,19 @@ namespace Il2cpp
         return il2cpp_class_is_generic(klass);
     }
 
+    Il2CppClass *FindClass(const char *klassName)
+    {
+        PAUSE_LOG;
+        auto &images = GetImages();
+        for (auto image : images)
+        {
+            auto klass = image->getClass(klassName);
+            if (klass)
+                return klass;
+        }
+        return nullptr;
+    }
+
     Il2CppType *GetMethodReturnType(MethodInfo *method)
     {
         return il2cpp_method_get_return_type(method);
@@ -710,6 +737,21 @@ namespace Il2cpp
         auto obj = method->getObject();
         auto args = obj->invoke_method<Il2CppArray<Il2CppObject *> *>("GetGenericArguments");
         return args->length();
+    }
+
+    MethodInfo *FindMethod(const char *klassName, const char *methodName, size_t argsCount)
+    {
+        PAUSE_LOG;
+        auto &images = GetImages();
+        for (auto image : images)
+        {
+            auto klass = image->getClass(klassName);
+            if (klass)
+            {
+                return GetClassMethod(klass, methodName, argsCount);
+            }
+        }
+        return nullptr;
     }
 
     Il2CppClass *GetClassFromType(Il2CppType *type)
@@ -775,5 +817,32 @@ namespace Il2cpp
     Il2CppObject *GetBoxedValue(Il2CppClass *klass, void *value)
     {
         return il2cpp_value_box(klass, value);
+    }
+
+    std::tuple<Il2CppAssembly **, size_t> assembliesCache{nullptr, 0};
+    const std::tuple<Il2CppAssembly **, size_t> &GetAssemblies()
+    {
+        const auto &[ass, size2] = assembliesCache;
+        if (size2 > 0)
+        {
+            return assembliesCache;
+        }
+        size_t size = 0;
+        auto asss = il2cpp_domain_get_assemblies(GetDomain(), &size);
+        assembliesCache = std::make_tuple(asss, size);
+        return assembliesCache;
+    }
+
+    std::vector<Il2CppImage *> imagesCache;
+    const std::vector<Il2CppImage *> &GetImages()
+    {
+        if (!imagesCache.empty())
+            return imagesCache;
+        const auto &[ass, size] = GetAssemblies();
+        for (size_t i = 0; i < size; i++)
+        {
+            imagesCache.push_back(GetImage(ass[i]));
+        }
+        return imagesCache;
     }
 } // namespace Il2cpp
