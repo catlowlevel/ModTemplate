@@ -252,7 +252,7 @@ struct Il2CppAssembly
 
 struct Il2CppImage
 {
-    Il2CppClass *getClass(const char *name);
+    Il2CppClass *getClass(const char *name, int subClass = 0);
 
     const char *getName();
 };

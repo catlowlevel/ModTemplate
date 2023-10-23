@@ -19,9 +19,9 @@ Il2CppImage *Il2CppAssembly::getImage()
     return Il2cpp::GetImage(this);
 }
 
-Il2CppClass *Il2CppImage::getClass(const char *name)
+Il2CppClass *Il2CppImage::getClass(const char *name, int subClass)
 {
-    return Il2cpp::GetClass(this, name);
+    return Il2cpp::GetClass(this, name, subClass);
 }
 
 const char *Il2CppImage::getName()
