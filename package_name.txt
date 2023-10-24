@@ -1,1 +1,1 @@
-com.pronetis.ironball2
+com.example.app
