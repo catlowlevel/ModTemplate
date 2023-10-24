@@ -1,5 +1,4 @@
 apply plugin: 'com.android.application'
-
 android {
     namespace "com.android.support"
     compileSdkVersion 30
@@ -37,42 +36,149 @@ android {
         }
 
     }
-    gradle.buildFinished { buildResult ->
-        if (buildResult.failure) {
-            return
-        }
-        println("Build Finished, running post-build script...")
-        def message = "default message";
-        def adbDevices = "adb devices".execute().text;
-        def exitValue = 0;
-        println(adbDevices);
-        if (adbDevices.find("device\n") != null) {
-            def result = exec {
-                workingDir "../scripts/"
-                commandLine "./send_to_phone.sh"
-            }
-            exec {
-                commandLine 'bash', '-c', "notify-send -t 5000 \"Post-build script\" \"Sending to devices...\""
-            }
-            exitValue = result.exitValue;
-        } else {
-            exec {
-                commandLine 'bash', '-c', "notify-send -t 5000 \"Post-build script\" \"No Devices attached!\""
-            }
-        }
-        if (exitValue == 0) {
-            message = "Post-build script executed successfully."
-        } else {
-            message = "Post-build script failed with error code: ${exitValue}"
-        }
-        exec {
-            commandLine 'bash', '-c', "notify-send -t 5000 \"Post-build script\" \"$message\""
-        }
-        println(message)
-    }
 }
 
 //dependencies must be placed below 'android' brackets to get it work on AIDE
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+}
+
+task checkIfAdbIsConnected {
+    doLast {
+        def stdout = new ByteArrayOutputStream()
+        exec {
+            commandLine android.adbExecutable, "devices"
+            standardOutput stdout
+        }
+
+        if (stdout.toString().find("device\n") == null) {
+            throw new GradleException("No devices connected through adb")
+        }
+    }
+}
+
+def getPackageName() {
+    def packageNameFile = new File(layout.projectDirectory.dir("../../package_name.txt").asFile.getAbsolutePath())
+    if (!packageNameFile.exists()) throw new GradleException("package_name.txt not found\nCreate one with the content of your target\napk package name and place it beside build.py")
+    def packageNameList = packageNameFile.readLines()
+    if (packageNameList.empty) throw new GradleException("package_name.txt is empty")
+
+    def package_name = packageNameList[0]
+//    project.extensions.package_name = package_name
+    return package_name
+}
+
+def getPackagePath(String packageName) {
+//    def packageName = project.extensions.package_name
+//    def packageName = "com.dxx.firenow"
+    def output = new ByteArrayOutputStream()
+    exec {
+        commandLine android.adbExecutable, "shell", "pm", "path", "${packageName}"
+        standardOutput output
+        ignoreExitValue true
+    }
+    def pathParts = output.toString().trim().split(":")
+    if (pathParts.length != 2) throw new GradleException("Unable to retrieve package path : ${packageName}")
+    def apkPath = pathParts[1]
+
+    def package_path = apkPath.split("/")[0..-2].join("/") + "/"
+//    project.extensions.package_path = package_path
+    return package_path
+}
+
+def getPackageLibPath(String packagePath) {
+//    def packagePath = project.extensions.package_path
+    def output = new ByteArrayOutputStream()
+    def command = [android.adbExecutable, "shell", "ls", "${packagePath}/lib"]
+    def result = exec {
+        commandLine command
+        standardOutput output
+        ignoreExitValue true
+    }
+    if (result.exitValue != 0) throw new GradleException("Failed to get package lib path\ncommand : ${command.join(" ")}\nFailed with exit code : ${result.exitValue}")
+
+    def package_lib_path = "${packagePath}lib/${output}".toString()
+//    project.extensions.package_lib_path = package_lib_path;
+    return package_lib_path
+}
+
+task copyApk {
+    if (project.hasProperty("release")) {
+        dependsOn("assembleRelease")
+    } else {
+        dependsOn("assembleDebug")
+    }
+    doLast {
+        def flavor = project.hasProperty("release") ? "release" : "debug"
+        if (flavor == "release") {
+            println("Copying release apk")
+        } else {
+            println("Copying debug apk")
+        }
+        def buildDir = fileTree(layout.buildDirectory.get())
+        def apks = buildDir.matching {
+            include "**/$flavor/*.apk"
+        }
+        if (apks.empty) {
+            throw new GradleException("No apk found")
+        }
+
+        // Sort the APK files by modification date (newest first)
+        apks = apks.sort { it.lastModified() }.reverse()
+
+        def src = apks[0]
+        def dst = project.file("../../")
+        println("Copying \n${src}\nto\n${dst}")
+        copy {
+            from src
+            into dst
+            rename { "menu_${flavor}.apk" }
+
+        }
+    }
+}
+
+task sendToPhone {
+    dependsOn(checkIfAdbIsConnected)
+    doLast {
+        def packageName = getPackageName()
+        def packagePath = getPackagePath(packageName)
+        def packageLibPath = getPackageLibPath(packagePath)
+
+        def flavor = project.hasProperty("release") ? "release" : "debug"
+        def libName = "libMyLibName.so"
+        def libPath = new File("${layout.buildDirectory.dir("intermediates/stripped_native_libs/$flavor/out/lib").get().asFile.absolutePath}")
+        if (!libPath.exists()) throw new GradleException("lib files not found")
+        def libFiles = fileTree(libPath).matching {
+            include "**/${libName}"
+        }
+        libFiles = libFiles.sort { it.lastModified() }.reverse()
+        def libFile = libFiles[0]
+        println("Pushing ${libName} to /sdcard")
+        def result = exec {
+            commandLine android.adbExecutable, "push", "${libFile.absolutePath}", "/sdcard"
+            ignoreExitValue true
+        }
+        if (result.exitValue != 0) {
+            println("Failed to push ${libFile.absolutePath} to /data/local/tmp")
+        }
+        result = exec {
+            commandLine android.adbExecutable, "shell", "su", "-c", "mv /sdcard/${libName} ${packageLibPath}"
+            ignoreExitValue true
+        }
+        if (result.exitValue != 0) {
+            println("Failed to move ${libName} to ${packageLibPath}")
+        }
+        println("Moved ${libName} to ${packageLibPath}")
+
+
+    }
+}
+
+tasks.configureEach { task ->
+    if (task.name == "assembleDebug") {
+        if (project.hasProperty("send")) {
+            task.finalizedBy(sendToPhone)
+        }
+    }
 }
