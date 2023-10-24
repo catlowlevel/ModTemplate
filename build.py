@@ -131,6 +131,8 @@ def main(argv: list[str]):
         print("Usage: python3 build.py <.apk>")
         exit(1)
 
+    arch = "arm64"
+    selected_arch = "arm64-v8a"
     global mode
     global do_clean_up
     if "--release" in argv:
@@ -140,8 +142,16 @@ def main(argv: list[str]):
     if "--keep" in argv:
         argv.remove("--keep")
         do_clean_up = False
+    if "--arm" in argv:
+        argv.remove("--arm")
+        arch = "arm"
 
     apk = argv[1]
+    if arch == "arm":
+        selected_arch = "armeabi-v7a"
+        print("Arm mode")
+    elif arch == "arm64":
+        print("Arm64 mode")
 
     if not apk.endswith(".apk"):
         print("Usage: python3 build.py <.apk>")
@@ -158,11 +168,15 @@ def main(argv: list[str]):
         exit(1)
 
     menu_apk = f"{mod_menu_dir}/app/build/intermediates/apk/{mode}/app-{mode}.apk"
+    menu_apk2 = f"{mod_menu_dir}/app/build/outputs/apk/{mode}/app-{mode}.apk"
 
     # check if menu_apk exists
     if not os.path.exists(menu_apk):
-        print("Menu apk not found")
-        exit(1)
+        if not os.path.exists(menu_apk2):
+            print("Menu apk not found")
+            exit(1)
+        else:
+            menu_apk = menu_apk2
 
     # copy
     shutil.copy(menu_apk, f"menu_{get_filename(apk)}.apk")
@@ -211,10 +225,19 @@ def main(argv: list[str]):
     dst = f"{target_dir}/{last_smali}"
     print(f"Copying {src} to {dst}")
     shutil.copytree(src, dst, dirs_exist_ok=True)
-    src = f"{menu_dir}/lib/arm64-v8a/libMyLibName.so"
-    dst = f"{target_dir}/lib/arm64-v8a/"
+    src = f"{menu_dir}/lib/{selected_arch}/libMyLibName.so"
+    dst = f"{target_dir}/lib/{selected_arch}/"
     print(f"Copying {src} to {dst}")
     shutil.copy(src, dst)
+
+    # delete other arch inside lib beside selected_arch
+    other_arch = os.listdir(f"{target_dir}/lib")
+    other_arch = [arch for arch in other_arch if arch != selected_arch]
+
+    for arch in other_arch:
+        print(f"Deleting {target_dir}/lib/{arch}")
+        shutil.rmtree(f"{target_dir}/lib/{arch}")
+
     result = recompile(apk)
     shutil.copy(result, f"{target_dir}_menued-{mode}.apk")
     print(f"Finished {target_dir}_menued-{mode}.apk")
