@@ -246,3 +246,8 @@ Il2CppObject *Il2CppClass::New()
 {
     return Il2cpp::NewObject(this);
 }
+
+Il2CppClass *MethodInfo::getClass()
+{
+    return Il2cpp::GetMethodClass(this);
+}

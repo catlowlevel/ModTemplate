@@ -176,6 +176,8 @@ struct MethodInfo
     template <typename T, typename... Args>
     T invoke_static(Args &&...args);
 
+    Il2CppClass *getClass();
+
   private:
     template <typename T, typename... Args>
     T invoke(Il2CppObject *instance, Args &&...args);

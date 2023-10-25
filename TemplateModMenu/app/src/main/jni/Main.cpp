@@ -26,7 +26,8 @@ Il2CppImage *g_Image = nullptr;
     {                                                                                                                  \
         void *old = methodInfo->methodPointer;                                                                         \
         void *n = methodInfo->replace(method);                                                                         \
-        LOGD(OBFUSCATE("%s (%p -> %p) HOOKED"), name, old, n);                                                         \
+        LOGD(OBFUSCATE("%s::%s (%p -> %p) HOOKED"), methodInfo->getClass()->getFullName().c_str(),                     \
+             methodInfo->getName(), old, n);                                                                           \
         return n;                                                                                                      \
     }();
 #define REPLACE_NAME_METHOD_ORIG(methodInfo, method, orig)                                                             \
