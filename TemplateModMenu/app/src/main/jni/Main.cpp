@@ -1,20 +1,13 @@
-#include <list>
-#include <vector>
-#include <cstring>
-#include <pthread.h>
-#include <thread>
-#include <cstring>
-#include <jni.h>
-#include <unistd.h>
-#include <fstream>
-#include <iostream>
-#include <dlfcn.h>
-#include "Includes/Logger.h"
-#include "Includes/obfuscate.h"
-#include "Includes/Utils.h"
-#include "KittyMemory/MemoryPatch.h"
-#include "Menu/Setup.h"
-#include "Il2cpp/Il2cpp.h"
+#include <jni.h>                 // for JNI_ERR, JNIEnv, jclass, JNINativeM...
+#include <pthread.h>             // for pthread_create
+#include <unistd.h>              // for sleep
+#include "Il2cpp/Il2cpp.h"       // for EnsureAttached, Init
+#include "Il2cpp/il2cpp-class.h" // for Il2CppImage, Il2CppObject
+#include "Includes/Logger.h"     // for LOGD, LOGI
+#include "Includes/Utils.h"      // for isGameLibLoaded, isLibraryLoaded
+#include "Includes/obfuscate.h"  // for make_obfuscator, OBFUSCATE
+#include "Menu/Menu.h"           // for Icon, IconWebViewData, SettingsList
+#include "Menu/Setup.h"          // for CheckOverlayPermission, Init
 
 // Target lib here
 #define targetLibName OBFUSCATE("libil2cpp.so")
