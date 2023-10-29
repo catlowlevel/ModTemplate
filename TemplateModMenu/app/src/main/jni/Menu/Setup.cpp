@@ -133,7 +133,7 @@ void CheckOverlayPermission(JNIEnv *env, jclass thiz, jobject ctx)
 void Init(JNIEnv *env, jobject thiz, jobject ctx, jobject title, jobject subtitle)
 {
     // Set sub title
-    setText(env, title, OBFUSCATE("<b>Survivor.io v.2.1.0 Mod</b>"));
+    setText(env, title, OBFUSCATE("<b>Mod Menu BY mIsmanXP</b>"));
 
     //    //Set sub title
     setText(env, subtitle,
