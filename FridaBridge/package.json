@@ -6,8 +6,8 @@
   "type": "module",
   "scripts": {
     "build": "frida-compile -o _.js -w index.ts",
-    "attach": "run() { frida -U \"$1\" -l _.js --runtime=v8; }; run",
-    "spawn": "run() { frida -U -f \"$1\" -l _.js --runtime=v8; }; run",
+    "attach": "run() { frida -H localhost \"$1\" -l _.js --runtime=v8; }; run",
+    "spawn": "run() { frida -H localhost -f \"$1\" -l _.js --runtime=v8; }; run",
     "app0-spawn": "npm run spawn com.hitapps.figgerits",
     "app1": "npm run \"Application1 Name\"",
     "app1-spawn": "npm run spawn com.example.application1"
