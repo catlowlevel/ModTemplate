@@ -15,6 +15,10 @@ bool isLibraryLoaded(const char *libraryName);
 
 uintptr_t string2Offset(const char *c);
 
+void patchOffsetSym(uintptr_t absolute_address, std::string hexBytes, bool isOn);
+
+void patchOffset(const char *fileName, uint64_t offset, std::string hexBytes, bool isOn);
+
 namespace ToastLength
 {
 inline const int LENGTH_LONG = 1;

@@ -8,31 +8,12 @@
 #include "Includes/obfuscate.h"  // for make_obfuscator, OBFUSCATE
 #include "Menu/Menu.h"           // for Icon, IconWebViewData, SettingsList
 #include "Menu/Setup.h"          // for CheckOverlayPermission, Init
+#include "Includes/Macros.h"
 
 // Target lib here
 #define targetLibName OBFUSCATE("libil2cpp.so")
 
 Il2CppImage *g_Image = nullptr;
-
-#define REPLACE_NAME_METHOD(methodInfo, name, method)                                                                  \
-    [&]                                                                                                                \
-    {                                                                                                                  \
-        void *old = methodInfo->methodPointer;                                                                         \
-        void *n = methodInfo->replace(method);                                                                         \
-        LOGD(OBFUSCATE("%s::%s (%p -> %p) HOOKED"), methodInfo->getClass()->getFullName().c_str(),                     \
-             methodInfo->getName(), old, n);                                                                           \
-        return n;                                                                                                      \
-    }();
-// clang-format off
-#define REPLACE_NAME_METHOD_ORIG(methodInfo, method, orig)  orig = (decltype(orig))REPLACE_NAME_METHOD(methodInfo, method)
-#define REPLACE_NAME_KLASS(klass, name, method)             REPLACE_NAME_METHOD(klass->getMethod(OBFUSCATE(name)), (const char *)OBFUSCATE(name), method)
-#define REPLACE_NAME_KLASS_ORIG(klass, name, method, orig)  REPLACE_NAME_METHOD_ORIG(klass->getMethod(OBFUSCATE(name)), (const char *)OBFUSCATE(name), method, orig)
-#define REPLACE_KLASS(klass, method)                        REPLACE_NAME_KLASS(klass, #method, method)
-#define REPLACE_NAME(className, name, method)               REPLACE_NAME_KLASS(g_Image->getClass((const char *)OBFUSCATE(className)), name, method)
-#define REPLACE_NAME_ORIG(className, name, method, orig)    REPLACE_NAME_KLASS_ORIG(g_Image->getClass(OBFUSCATE(className)), name, method, orig)
-#define REPLACE(className, method)                          REPLACE_NAME(className, #method, method)
-#define REPLACE_ORIG(className, method, orig)               REPLACE_NAME_ORIG(className, #method, method, orig)
-// clang-format on
 
 void SampleHook(Il2CppObject *instance, int arg)
 {
