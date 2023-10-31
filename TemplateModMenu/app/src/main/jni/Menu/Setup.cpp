@@ -40,11 +40,13 @@ void setDialog(jobject ctx, JNIEnv *env, const char *title, const char *msg)
 void Toast(JNIEnv *env, jobject thiz, const char *text, int length)
 {
     jstring jstr = env->NewStringUTF(text);
+    jclass html = (*env).FindClass(OBFUSCATE("android/text/Html"));
+    jmethodID fromHtml = (*env).GetStaticMethodID(html, OBFUSCATE("fromHtml"), OBFUSCATE("(Ljava/lang/String;)Landroid/text/Spanned;"));
     jclass toast = env->FindClass(OBFUSCATE("android/widget/Toast"));
     jmethodID methodMakeText =
-        env->GetStaticMethodID(toast, OBFUSCATE("makeText"),
-                               OBFUSCATE("(Landroid/content/Context;Ljava/lang/CharSequence;I)Landroid/widget/Toast;"));
-    jobject toastobj = env->CallStaticObjectMethod(toast, methodMakeText, thiz, jstr, length);
+            env->GetStaticMethodID(toast,OBFUSCATE("makeText"),
+                                   OBFUSCATE("(Landroid/content/Context;Ljava/lang/CharSequence;I)Landroid/widget/Toast;"));
+    jobject toastobj = env->CallStaticObjectMethod(toast, methodMakeText,thiz, (*env).CallStaticObjectMethod(html, fromHtml, jstr), length);
     jmethodID methodShow = env->GetMethodID(toast, OBFUSCATE("show"), OBFUSCATE("()V"));
     env->CallVoidMethod(toastobj, methodShow);
 }
