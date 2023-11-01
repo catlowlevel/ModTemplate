@@ -2,6 +2,7 @@
 #define UTILS
 
 #include <jni.h>
+#include <string>
 
 typedef unsigned long DWORD;
 
@@ -21,8 +22,8 @@ void patchOffset(const char *fileName, uint64_t offset, std::string hexBytes, bo
 
 namespace ToastLength
 {
-inline const int LENGTH_LONG = 1;
-inline const int LENGTH_SHORT = 0;
+    inline const int LENGTH_LONG = 1;
+    inline const int LENGTH_SHORT = 0;
 } // namespace ToastLength
 
 #endif
