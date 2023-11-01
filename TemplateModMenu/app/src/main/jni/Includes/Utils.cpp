@@ -2,10 +2,10 @@
 #include <unistd.h>
 #include <cstdio>
 #include <cstring>
-#include <string>
 #include <cstdlib>
 #include "obfuscate.h"
 #include "Logger.h"
+#include "KittyMemory/MemoryPatch.h"
 
 uintptr_t libBase;
 
