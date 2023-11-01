@@ -17,5 +17,5 @@
 
 #define LOGPTR(ptr) LOGD(#ptr " => 0x%llX", ptr)
 #define LOGINT(var) LOGD(#var " => %d", var)
-#define LOGSINGLE(var) LOGD(#var " => %f", ptr)
+#define LOGSINGLE(var) LOGD(#var " => %f", var)
 #define LOGSTR(il2cppstring) LOGD(#il2cppstring " => %s", il2cppstring->to_string().c_str())
