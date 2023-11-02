@@ -73,8 +73,10 @@ target_link_libraries(MyLibName
         dobby_static
         )
 
-file(CREATE_LINK
-  "${CMAKE_BINARY_DIR}/compile_commands.json"
-  "${CMAKE_SOURCE_DIR}/compile_commands.json"
-  SYMBOLIC
-)
+if(WIN32)
+  # Windows platform detected, perform a copy operation
+  file(COPY "${CMAKE_BINARY_DIR}/compile_commands.json" DESTINATION "${CMAKE_SOURCE_DIR}")
+else()
+  # For non-Windows platforms, create a symbolic link
+  file(CREATE_LINK "${CMAKE_BINARY_DIR}/compile_commands.json" "${CMAKE_SOURCE_DIR}/compile_commands.json" SYMBOLIC)
+endif()
