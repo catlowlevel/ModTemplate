@@ -702,6 +702,11 @@ namespace Il2cpp
         return nullptr;
     }
 
+    Il2CppClass *GetClassFromSystemType(Il2CppReflectionType *type)
+    {
+        return il2cpp_class_from_system_type(type);
+    }
+
     Il2CppType *GetMethodReturnType(MethodInfo *method)
     {
         return il2cpp_method_get_return_type(method);

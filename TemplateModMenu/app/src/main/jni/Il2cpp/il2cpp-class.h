@@ -284,6 +284,8 @@ struct Il2CppClass
     size_t getSize();
 
     Il2CppObject *New();
+
+    Il2CppClass *inflate(std::initializer_list<Il2CppClass *> types);
 };
 
 struct FieldInfo

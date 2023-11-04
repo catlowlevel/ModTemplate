@@ -37,6 +37,7 @@ namespace Il2cpp
     Il2CppType *GetClassType(Il2CppClass *klass);
     bool GetClassIsGeneric(Il2CppClass *klass);
     Il2CppClass *FindClass(const char *klassName);
+    Il2CppClass *GetClassFromSystemType(Il2CppReflectionType *type);
 
     // object
     uint32_t GetObjectSize(Il2CppObject *object);

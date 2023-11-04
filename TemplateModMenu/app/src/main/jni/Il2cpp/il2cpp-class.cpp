@@ -120,6 +120,30 @@ MethodInfo *MethodInfo::inflate(std::initializer_list<Il2CppClass *> types)
     return Il2cpp::GetMethodFromReflection(result);
 }
 
+Il2CppClass *Il2CppClass::inflate(std::initializer_list<Il2CppClass *> types)
+{
+    // TODO: check generic count
+    // if (types.size() != Il2cpp::GetMethodGenericCount(this))
+    // {
+    //     LOGE("Types generic count doesn't match");
+    //     return nullptr;
+    // }
+    static auto corlib = Il2cpp::GetCorlib();
+    static auto systemType = corlib->getClass("System.Type");
+    auto array = Il2cpp::ArrayNewGeneric<Il2CppObject *>(systemType, types.size());
+    int i = 0;
+    for (auto type : types)
+    {
+        auto typeObj = Il2cpp::GetTypeObject(Il2cpp::GetClassType(type));
+        array->data[i] = typeObj;
+        i++;
+    }
+    // auto methodObj = this->getObject();
+    auto obj = Il2cpp::GetTypeObject(Il2cpp::GetClassType(this));
+    auto result = obj->invoke_method<Il2CppReflectionType *>("MakeGenericType", array);
+    return Il2cpp::GetClassFromSystemType(result);
+}
+
 Il2CppObject *MethodInfo::getObject()
 {
     return (Il2CppObject *)Il2cpp::GetMethodObject(this);
