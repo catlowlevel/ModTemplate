@@ -41,9 +41,9 @@ const char *Il2CppImage::getName()
     return Il2cpp::GetImageName(this);
 }
 
-MethodInfo *Il2CppClass::getMethod(const char *name)
+MethodInfo *Il2CppClass::getMethod(const char *name, size_t argsCount)
 {
-    return Il2cpp::GetClassMethod(this, name);
+    return Il2cpp::GetClassMethod(this, name, argsCount);
 }
 
 std::vector<MethodInfo *> Il2CppClass::getMethods(const char *filter)

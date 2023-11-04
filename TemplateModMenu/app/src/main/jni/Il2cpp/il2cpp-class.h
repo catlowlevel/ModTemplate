@@ -261,7 +261,7 @@ struct Il2CppImage
 
 struct Il2CppClass
 {
-    MethodInfo *getMethod(const char *name);
+    MethodInfo *getMethod(const char *name, size_t argsCount = -1);
 
     MethodInfo *findMethod(const char *name, size_t idx = 0);
 
