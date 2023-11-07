@@ -21,6 +21,11 @@
 #define REPLACE(className, to)                          REPLACE_NAME(className, #to, to)
 #define REPLACE_ORIG(className, to, orig)               REPLACE_NAME_ORIG(className, #to, to, orig)
 
+#define REPLACE_NAMESPACE_NAME(namespace,classname,name,method) REPLACE_NAME(namespace "." classname, name, method)
+#define REPLACE_NAMESPACE_NAME_ORIG(namespace,classname,name,method,orig) REPLACE_NAME_ORIG(namespace "." classname, name, method, orig)
+#define REPLACE_NAMESPACE(namespace,classname,method) REPLACE(namespace "." classname,method)
+#define REPLACE_NAMESPACE_ORIG(namespace,classname,method,orig) REPLACE_ORIG(namespace "." classname,method,orig)
+
 #define PATCH(offset, hex) patchOffset(targetLibName, string2Offset(OBFUSCATE(offset)), OBFUSCATE(hex), true)
 #define PATCH_LIB(lib, offset, hex) patchOffset(OBFUSCATE(lib), string2Offset(OBFUSCATE(offset)), OBFUSCATE(hex), true)
 
