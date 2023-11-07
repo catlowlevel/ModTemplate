@@ -490,6 +490,19 @@ namespace Il2cpp
         return true;
     }
 
+    void Detach()
+    {
+        auto curr = il2cpp_thread_current();
+        if (!curr)
+        {
+            LOGI("Foreign thread!");
+            return;
+        }
+        LOGI("Detaching Thread");
+        il2cpp_thread_detach(curr);
+        LOGI("Thread Detached");
+    }
+
     Il2CppDomain *GetDomain()
     {
         return il2cpp_domain_get();

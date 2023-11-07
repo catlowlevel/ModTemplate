@@ -13,6 +13,7 @@ namespace Il2cpp
 
     void Init();
     bool EnsureAttached();
+    void Detach();
 
     Il2CppDomain *GetDomain();
     Il2CppImage *GetImage(Il2CppAssembly *assembly);
