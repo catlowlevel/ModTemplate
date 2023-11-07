@@ -263,6 +263,8 @@ struct Il2CppClass
 {
     MethodInfo *getMethod(const char *name, size_t argsCount = -1);
 
+    MethodInfo *getMethod(const char *name,std::vector<std::string> args);
+
     MethodInfo *findMethod(const char *name, size_t idx = 0);
 
     FieldInfo *getField(const char *fieldName);
