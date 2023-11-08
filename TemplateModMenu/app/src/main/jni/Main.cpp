@@ -15,10 +15,53 @@
 
 Il2CppImage *g_Image = nullptr;
 
-void SampleHook(Il2CppObject *instance, int arg)
+// exmaple dump.cs
+// class Game.Sample.Class //Assembly-CSharp
+// {
+//     System.Int32 Id; // 0x10
+//     System.Int32 BuffType; // 0x14
+//     UnityEngine.Vector3 Vel; // 0x18
+//     UnityEngine.Vector3 Pos // 0x24
+//     System.Single Interval; // 0x30
+//     System.Single Counter; // 0x34
+//     System.Int32 GoIndex; // 0x38
+//     System.String Param; // 0x40
+//     System.Int32 get_Id();
+//     System.Void set_Position(UnityEngine.Vector3 pos);
+//     System.Void .ctor(); // 0x017ad8d4
+// }
+//
+// class Game.Sample.Class.SubClass
+// {
+//     System.Void SampleMethod();
+//     System.Void .ctor();
+// }
+
+struct UnityEngine_Vector3
 {
-    instance->setField("field", 1000);
-    return instance->invoke_method<void>("Sample", arg);
+    float x, y, z;
+};
+
+void Class_set_Position(Il2CppObject *instance, UnityEngine_Vector3 pos)
+{
+    LOGD("set_Position: %f, %f, %f", pos.x, pos.y, pos.z);
+    pos.x += 1;
+    return instance->invoke_method<void>("set_Position", pos);
+}
+
+void (*o_Class_ctor)(Il2CppObject *);
+void Class_ctor(Il2CppObject *instance)
+{
+    o_Class_ctor(instance);
+    auto id = instance->getField<int32_t>("Id");
+    LOGINT(id);
+    instance->setField("BuffType", 2);
+}
+
+void SubClass_SampleMethod(Il2CppObject *instance)
+{
+    LOGD("SampleMethod");
+    return instance->invoke_method<void>("SampleMethod");
 }
 
 // we will run our hacks in a new thread so our while loop doesn't block process main thread
@@ -38,9 +81,16 @@ void *hack_thread(void *)
     Il2cpp::EnsureAttached();
 
     LOGD(OBFUSCATE("HOOKING..."));
-    //    g_Image = Il2cpp::GetAssembly("Game.Domain")->getImage();
-    //
-    //    REPLACE_NAME("Samle.Class", "Sample", SampleHook);
+    // g_Image = Il2cpp::GetAssembly("Assembly-CSharp")->getImage();
+
+    // // EXAMPLES
+    // // HOOK
+    // REPLACE_NAME("Game.Sample.Class", "set_Position", Class_set_Position);
+    // REPLACE_NAME_ORIG("Game.Sample.Class", ".ctor", Class_ctor, o_Class_ctor);
+
+    // // HOOK SUBCLASS
+    // auto SubClass = g_Image->getClass("Game.Sample.Class.SubClass", 1);
+    // REPLACE_NAME_KLASS(SubClass, "SampleMethod", SubClass_SampleMethod);
 
     LOGD(OBFUSCATE("HOOKED!"));
 
