@@ -138,6 +138,22 @@ task copyApk {
     }
 }
 
+def stopProcess(String packageName) {
+    def result = exec {
+        commandLine android.adbExecutable, "shell", "am", "force-stop", "${packageName}"
+        ignoreExitValue true
+    }
+    if (result.exitValue != 0) throw new GradleException("Failed to stop process : ${packageName}")
+}
+
+def startProcess(String packageName) {
+    def result = exec {
+        commandLine android.adbExecutable, "shell", "monkey", "-p", "${packageName}", "-c", "android.intent.category.LAUNCHER", "1"
+        ignoreExitValue true
+    }
+    if (result.exitValue != 0) throw new GradleException("Failed to start process : ${packageName}")
+}
+
 task sendToPhone {
     dependsOn(checkIfAdbIsConnected)
     doLast {
@@ -170,15 +186,23 @@ task sendToPhone {
             println("Failed to move ${libName} to ${packageLibPath}")
         }
         println("Moved ${libName} to ${packageLibPath}")
+    }
+}
 
-
+task sendToPhoneAndRestart {
+    dependsOn(sendToPhone)
+    doLast {
+        stopProcess(getPackageName())
+        startProcess(getPackageName())
     }
 }
 
 tasks.configureEach { task ->
     if (task.name == "assembleDebug") {
-        if (project.hasProperty("send")) {
+        if (project.hasProperty("send") || project.hasProperty("s")) {
             task.finalizedBy(sendToPhone)
+        } else if(project.hasProperty("sendAndRestart") || project.hasProperty("snr")) {
+            task.finalizedBy(sendToPhoneAndRestart)
         }
     }
 }
