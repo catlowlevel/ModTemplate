@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
 import android.graphics.Typeface;
@@ -70,31 +71,32 @@ public class Menu {
     //region Variable
     public static final String TAG = "Mod_Menu"; //Tag for logcat
 
-    int TEXT_COLOR = Color.parseColor("#FE4057");
-    int TEXT_COLOR_2 = Color.parseColor("#FFFFFF");
-    int BTN_COLOR = Color.parseColor("#262C33");
-    int MENU_BG_COLOR = Color.parseColor("#EE1C2A35");
-    int MENU_FEATURE_BG_COLOR = Color.parseColor("#DD141C22");
+    // Modify the current configuration with a red-ish Tokyo Night theme
+    int TEXT_COLOR = Color.parseColor("#FF3E4D"); // Red text color
+    int TEXT_COLOR_2 = Color.parseColor("#FF3E4D"); // Red secondary text color
+    int BTN_COLOR = Color.parseColor("#1E1E1E"); // Very dark background color for buttons
+    int MENU_BG_COLOR = Color.parseColor("#121212"); // Dark background color for the menu
+    int MENU_FEATURE_BG_COLOR = Color.parseColor("#0C0C0C"); // Slightly darker feature background color
 
     // Rest of the variables can remain the same
     int MENU_WIDTH = 290;
-    int MENU_HEIGHT = 210;
+    int MENU_HEIGHT = 300;
     int POS_X = 0;
     int POS_Y = 100;
     float MENU_CORNER = 4f;
     int ICON_SIZE = 45; // Change both width and height of the image
     float ICON_ALPHA = 0.7f; // Transparent
-    int ToggleON = Color.parseColor("#FE4057");
-    int ToggleOFF = Color.parseColor("#BF6570");
-    int BtnON = Color.parseColor("#FE4057");
-    int BtnOFF = Color.parseColor("#BF6570");
-    int CategoryBG = Color.parseColor("#2F3D4C");
-    int SeekBarColor = Color.parseColor("#FE4057");
-    int SeekBarProgressColor = Color.parseColor("#FE4057");
-    int CheckBoxColor = Color.parseColor("#FE4057");
-    int OtherBG = Color.parseColor("#262C33");
-    int RadioColor = Color.parseColor("#FE4057");
-    String NumberTxtColor = "#FE4057";
+    int ToggleOFF = Color.parseColor("#FF3E4D"); // Red color for toggle on state
+    int ToggleON = Color.parseColor("#FFD700"); // Gold color for toggle off state
+    int BtnON = ToggleON;
+    int BtnOFF = Color.parseColor("#1E1E1E");
+    int CategoryBG = Color.parseColor("#0C0C0C"); // Darker background color for categories
+    int SeekBarColor = Color.parseColor("#FF3E4D"); // Red color for seek bar
+    int SeekBarProgressColor = ToggleON;
+    int CheckBoxColor = Color.parseColor("#FF3E4D"); // Red color for checkbox
+    int OtherBG = Color.parseColor("#1E1E1E"); // Very dark background color for other elements
+    int RadioColor = Color.parseColor("#FF3E4D"); // Red color for radio button
+    String NumberTxtColor = "#FF3E4D"; // Red text color
 
     //********************************************************************//
 
@@ -132,12 +134,12 @@ public class Menu {
         rootFrame.setOnTouchListener(onTouchListener());
         mRootContainer = new RelativeLayout(context); // Markup on which two markups of the icon and the menu itself will be placed
         mCollapsed = new RelativeLayout(context); // Markup of the icon (when the menu is minimized)
-        mCollapsed.setVisibility(View.VISIBLE);
+        mCollapsed.setVisibility(View.GONE);
         mCollapsed.setAlpha(ICON_ALPHA);
 
         //********** The box of the mod menu **********
         mExpanded = new LinearLayout(context); // Menu markup (when the menu is expanded)
-        mExpanded.setVisibility(View.GONE);
+        mExpanded.setVisibility(View.VISIBLE);
         mExpanded.setBackgroundColor(MENU_BG_COLOR);
         mExpanded.setOrientation(LinearLayout.VERTICAL);
         // mExpanded.setPadding(1, 1, 1, 1); //So borders would be visible
@@ -619,7 +621,8 @@ public class Menu {
     private void Button(LinearLayout linLayout, final int featNum, final String featName) {
         final Button button = new Button(getContext);
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT);
-        layoutParams.setMargins(7, 5, 7, 5);
+        layoutParams.setMargins(0, 2, 0, 2);
+//        layoutParams.setMargins(7, 5, 7, 5);
         button.setLayoutParams(layoutParams);
         button.setTextColor(TEXT_COLOR_2);
         button.setAllCaps(false); //Disable caps to support html
@@ -647,12 +650,14 @@ public class Menu {
     private void ButtonLink(LinearLayout linLayout, final String featName, final String url) {
         final Button button = new Button(getContext);
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT);
-        layoutParams.setMargins(7, 5, 7, 5);
+//        layoutParams.setMargins(7, 5, 7, 5);
+        layoutParams.setMargins(0, 2, 0, 2);
         button.setLayoutParams(layoutParams);
         button.setAllCaps(false); //Disable caps to support html
         button.setTextColor(TEXT_COLOR_2);
         button.setText(Html.fromHtml(featName));
         button.setBackgroundColor(BTN_COLOR);
+        button.setPaintFlags(button.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 Intent intent = new Intent(Intent.ACTION_VIEW);
@@ -667,7 +672,8 @@ public class Menu {
     private void ButtonOnOff(LinearLayout linLayout, final int featNum, String featName, boolean switchedOn) {
         final Button button = new Button(getContext);
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT);
-        layoutParams.setMargins(7, 5, 7, 5);
+//        layoutParams.setMargins(7, 5, 7, 5);
+        layoutParams.setMargins(0, 2, 0, 2);
         button.setLayoutParams(layoutParams);
         button.setTextColor(TEXT_COLOR_2);
         button.setAllCaps(false); //Disable caps to support html
@@ -675,12 +681,14 @@ public class Menu {
         final String finalfeatName = featName.replace("OnOff_", "");
         boolean isOn = Preferences.loadPrefBool(featName, featNum, switchedOn);
         if (isOn) {
-            button.setText(Html.fromHtml(finalfeatName + ": ON"));
+            button.setText(Html.fromHtml(finalfeatName));
             button.setBackgroundColor(BtnON);
+            button.setTextColor(TEXT_COLOR);
             isOn = false;
         } else {
-            button.setText(Html.fromHtml(finalfeatName + ": OFF"));
+            button.setText(Html.fromHtml(finalfeatName));
             button.setBackgroundColor(BtnOFF);
+            button.setTextColor(BtnON);
             isOn = true;
         }
         final boolean finalIsOn = isOn;
@@ -691,12 +699,14 @@ public class Menu {
                 Preferences.changeFeatureBool(finalfeatName, featNum, isOn);
                 //Log.d(TAG, finalfeatName + " " + featNum + " " + isActive2);
                 if (isOn) {
-                    button.setText(Html.fromHtml(finalfeatName + ": ON"));
+                    button.setText(Html.fromHtml(finalfeatName));
                     button.setBackgroundColor(BtnON);
+                    button.setTextColor(TEXT_COLOR);
                     isOn = false;
                 } else {
-                    button.setText(Html.fromHtml(finalfeatName + ": OFF"));
+                    button.setText(Html.fromHtml(finalfeatName));
                     button.setBackgroundColor(BtnOFF);
+                    button.setTextColor(BtnON);
                     isOn = true;
                 }
             }
@@ -712,7 +722,8 @@ public class Menu {
         // to keep the down arrow symbol. No arrow symbol if setBackgroundColor set
         LinearLayout linearLayout2 = new LinearLayout(getContext);
         LinearLayout.LayoutParams layoutParams2 = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
-        layoutParams2.setMargins(7, 2, 7, 2);
+        layoutParams2.setMargins(0, 2, 0, 2);
+//        layoutParams2.setMargins(7, 2, 7, 2);
         linearLayout2.setOrientation(LinearLayout.VERTICAL);
         linearLayout2.setBackgroundColor(BTN_COLOR);
         linearLayout2.setLayoutParams(layoutParams2);
@@ -744,7 +755,8 @@ public class Menu {
     private void InputNum(LinearLayout linLayout, final int featNum, final String featName, final int maxValue) {
         LinearLayout linearLayout = new LinearLayout(getContext);
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT);
-        layoutParams.setMargins(7, 5, 7, 5);
+//        layoutParams.setMargins(7, 5, 7, 5);
+        layoutParams.setMargins(0, 2, 0, 2);
 
         final Button button = new Button(getContext);
         int num = Preferences.loadPrefInt(featName, featNum);
@@ -831,7 +843,8 @@ public class Menu {
     private void InputText(LinearLayout linLayout, final int featNum, final String featName) {
         LinearLayout linearLayout = new LinearLayout(getContext);
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT);
-        layoutParams.setMargins(7, 5, 7, 5);
+//        layoutParams.setMargins(7, 5, 7, 5);
+        layoutParams.setMargins(0, 2, 0, 2);
 
         final Button button = new Button(getContext);
 
@@ -903,6 +916,7 @@ public class Menu {
     private void CheckBox(LinearLayout linLayout, final int featNum, final String featName, boolean switchedOn) {
         final CheckBox checkBox = new CheckBox(getContext);
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT);
+//        layoutParams.setMargins(0, 2, 0, 2);
         layoutParams.setMargins(0, 2, 0, 2);
         checkBox.setLayoutParams(layoutParams);
         checkBox.setText(featName);
@@ -965,7 +979,8 @@ public class Menu {
 
     private void Collapse(LinearLayout linLayout, final String text, final boolean expanded) {
         LinearLayout.LayoutParams layoutParamsLL = new LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT);
-        layoutParamsLL.setMargins(0, 5, 0, 0);
+//        layoutParamsLL.setMargins(0, 5, 0, 0);
+        layoutParamsLL.setMargins(0, 2, 0, 2);
 
         LinearLayout collapse = new LinearLayout(getContext);
         collapse.setLayoutParams(layoutParamsLL);
@@ -974,14 +989,14 @@ public class Menu {
 
         final LinearLayout collapseSub = new LinearLayout(getContext);
         collapseSub.setVerticalGravity(16);
-        collapseSub.setPadding(0, 5, 0, 5);
+        collapseSub.setPadding(0, 2, 0, 5);
         collapseSub.setOrientation(LinearLayout.VERTICAL);
-        collapseSub.setBackgroundColor(Color.parseColor("#222D38"));
         collapseSub.setVisibility(View.GONE);
+        collapseSub.setBackgroundColor(Color.parseColor("#151515"));
         mCollapse = collapseSub;
 
         final TextView textView = new TextView(getContext);
-        textView.setBackgroundColor(CategoryBG);
+        textView.setBackgroundColor(OtherBG);
         textView.setText("▽ " + text + " ▽");
         textView.setGravity(Gravity.CENTER);
         textView.setTextColor(TEXT_COLOR_2);
