@@ -134,12 +134,12 @@ public class Menu {
         rootFrame.setOnTouchListener(onTouchListener());
         mRootContainer = new RelativeLayout(context); // Markup on which two markups of the icon and the menu itself will be placed
         mCollapsed = new RelativeLayout(context); // Markup of the icon (when the menu is minimized)
-        mCollapsed.setVisibility(View.GONE);
+        mCollapsed.setVisibility(View.VISIBLE);
         mCollapsed.setAlpha(ICON_ALPHA);
 
         //********** The box of the mod menu **********
         mExpanded = new LinearLayout(context); // Menu markup (when the menu is expanded)
-        mExpanded.setVisibility(View.VISIBLE);
+        mExpanded.setVisibility(View.GONE);
         mExpanded.setBackgroundColor(MENU_BG_COLOR);
         mExpanded.setOrientation(LinearLayout.VERTICAL);
         // mExpanded.setPadding(1, 1, 1, 1); //So borders would be visible
