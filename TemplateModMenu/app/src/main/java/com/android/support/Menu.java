@@ -256,40 +256,9 @@ public class Menu {
         mods = new LinearLayout(context);
         mods.setOrientation(LinearLayout.VERTICAL);
 
-        //********** RelativeLayout for buttons **********
-        RelativeLayout relativeLayout = new RelativeLayout(context);
-        relativeLayout.setPadding(10, 3, 10, 3);
-        relativeLayout.setVerticalGravity(Gravity.CENTER);
-
-        //**********  Hide/Kill button **********
-        RelativeLayout.LayoutParams lParamsHideBtn = new RelativeLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
-        lParamsHideBtn.addRule(ALIGN_PARENT_LEFT);
-
-        Button hideBtn = new Button(context);
-        hideBtn.setLayoutParams(lParamsHideBtn);
-        hideBtn.setBackgroundColor(Color.TRANSPARENT);
-        hideBtn.setText("HIDE/KILL (Hold)");
-        hideBtn.setTextColor(TEXT_COLOR);
-        hideBtn.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                mCollapsed.setVisibility(View.VISIBLE);
-                mCollapsed.setAlpha(0);
-                mExpanded.setVisibility(View.GONE);
-                Toast.makeText(view.getContext(), "Icon hidden. Remember the hidden icon position", Toast.LENGTH_LONG).show();
-            }
-        });
-        hideBtn.setOnLongClickListener(new View.OnLongClickListener() {
-            public boolean onLongClick(View view) {
-                Toast.makeText(view.getContext(), "Menu killed", Toast.LENGTH_LONG).show();
-                rootFrame.removeView(mRootContainer);
-                mWindowManager.removeView(rootFrame);
-                return false;
-            }
-        });
-
         //********** Close button **********
-        RelativeLayout.LayoutParams lParamsCloseBtn = new RelativeLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
-        lParamsCloseBtn.addRule(ALIGN_PARENT_RIGHT);
+        // RelativeLayout.LayoutParams lParamsCloseBtn = new RelativeLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
+        LinearLayout.LayoutParams lParamsCloseBtn = new LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT);
 
         Button closeBtn = new Button(context);
         closeBtn.setLayoutParams(lParamsCloseBtn);
@@ -318,9 +287,7 @@ public class Menu {
         mExpanded.addView(subTitle);
         scrollView.addView(mods);
         mExpanded.addView(scrollView);
-        relativeLayout.addView(hideBtn);
-        relativeLayout.addView(closeBtn);
-        mExpanded.addView(relativeLayout);
+        mExpanded.addView(closeBtn);
 
         Init(context, title, subTitle);
     }
