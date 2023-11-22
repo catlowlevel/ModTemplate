@@ -261,7 +261,9 @@ struct Il2CppImage
 
 struct Il2CppClass
 {
-    MethodInfo *getMethod(const char *name);
+    MethodInfo *getMethod(const char *name, size_t argsCount = -1);
+
+    MethodInfo *getMethod(const char *name,std::vector<std::string> args);
 
     MethodInfo *findMethod(const char *name, size_t idx = 0);
 
@@ -284,6 +286,8 @@ struct Il2CppClass
     size_t getSize();
 
     Il2CppObject *New();
+
+    Il2CppClass *inflate(std::initializer_list<Il2CppClass *> types);
 };
 
 struct FieldInfo

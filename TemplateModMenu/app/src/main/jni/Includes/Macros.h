@@ -2,24 +2,29 @@
 #ifndef ANDROID_MOD_MENU_MACROS_H
 #define ANDROID_MOD_MENU_MACROS_H
 
-#define REPLACE_NAME_METHOD(methodInfo, name, method)                                                                  \
+#define REPLACE_METHOD(methodInfo, to)                                                                                 \
     [&]                                                                                                                \
     {                                                                                                                  \
         void *old = methodInfo->methodPointer;                                                                         \
-        void *n = methodInfo->replace(method);                                                                         \
+        void *n = methodInfo->replace(to);                                                                             \
         LOGD(OBFUSCATE("%s::%s (%p -> %p) HOOKED"), methodInfo->getClass()->getFullName().c_str(),                     \
              methodInfo->getName(), old, n);                                                                           \
         return n;                                                                                                      \
     }();
 // clang-format off
-#define REPLACE_NAME_METHOD_ORIG(methodInfo, method, orig)  orig = (decltype(orig))REPLACE_NAME_METHOD(methodInfo, method)
-#define REPLACE_NAME_KLASS(klass, name, method)             REPLACE_NAME_METHOD(klass->getMethod(OBFUSCATE(name)), (const char *)OBFUSCATE(name), method)
-#define REPLACE_NAME_KLASS_ORIG(klass, name, method, orig)  REPLACE_NAME_METHOD_ORIG(klass->getMethod(OBFUSCATE(name)), (const char *)OBFUSCATE(name), method, orig)
-#define REPLACE_KLASS(klass, method)                        REPLACE_NAME_KLASS(klass, #method, method)
-#define REPLACE_NAME(className, name, method)               REPLACE_NAME_KLASS(g_Image->getClass((const char *)OBFUSCATE(className)), name, method)
-#define REPLACE_NAME_ORIG(className, name, method, orig)    REPLACE_NAME_KLASS_ORIG(g_Image->getClass(OBFUSCATE(className)), name, method, orig)
-#define REPLACE(className, method)                          REPLACE_NAME(className, #method, method)
-#define REPLACE_ORIG(className, method, orig)               REPLACE_NAME_ORIG(className, #method, method, orig)
+#define REPLACE_NAME_METHOD_ORIG(methodInfo, to, orig)  orig = (decltype(orig))REPLACE_METHOD(methodInfo, to)
+#define REPLACE_NAME_KLASS(klass, methodName, to)             REPLACE_METHOD(klass->getMethod(OBFUSCATE(methodName)), to)
+#define REPLACE_NAME_KLASS_ORIG(klass, methodName, to, orig)  REPLACE_NAME_METHOD_ORIG(klass->getMethod(OBFUSCATE(methodName)), to, orig)
+#define REPLACE_KLASS(klass, to)                        REPLACE_NAME_KLASS(klass, #to, to)
+#define REPLACE_NAME(className, methodName, to)               REPLACE_NAME_KLASS(g_Image->getClass((const char *)OBFUSCATE(className)), methodName, to)
+#define REPLACE_NAME_ORIG(className, methodName, to, orig)    REPLACE_NAME_KLASS_ORIG(g_Image->getClass(OBFUSCATE(className)), methodName, to, orig)
+#define REPLACE(className, to)                          REPLACE_NAME(className, #to, to)
+#define REPLACE_ORIG(className, to, orig)               REPLACE_NAME_ORIG(className, #to, to, orig)
+
+#define REPLACE_NAMESPACE_NAME(namespace,classname,name,method) REPLACE_NAME(namespace "." classname, name, method)
+#define REPLACE_NAMESPACE_NAME_ORIG(namespace,classname,name,method,orig) REPLACE_NAME_ORIG(namespace "." classname, name, method, orig)
+#define REPLACE_NAMESPACE(namespace,classname,method) REPLACE(namespace "." classname,method)
+#define REPLACE_NAMESPACE_ORIG(namespace,classname,method,orig) REPLACE_ORIG(namespace "." classname,method,orig)
 
 #define PATCH(offset, hex) patchOffset(targetLibName, string2Offset(OBFUSCATE(offset)), OBFUSCATE(hex), true)
 #define PATCH_LIB(lib, offset, hex) patchOffset(OBFUSCATE(lib), string2Offset(OBFUSCATE(offset)), OBFUSCATE(hex), true)

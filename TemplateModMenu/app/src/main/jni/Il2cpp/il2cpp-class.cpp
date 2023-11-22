@@ -41,9 +41,44 @@ const char *Il2CppImage::getName()
     return Il2cpp::GetImageName(this);
 }
 
-MethodInfo *Il2CppClass::getMethod(const char *name)
+MethodInfo *Il2CppClass::getMethod(const char *name, size_t argsCount)
 {
-    return Il2cpp::GetClassMethod(this, name);
+    return Il2cpp::GetClassMethod(this, name, argsCount);
+}
+
+MethodInfo *Il2CppClass::getMethod(const char *name, std::vector<std::string> args) {
+
+    for (auto m : this->getMethods())
+    {
+        int matched = 0;
+        const char *methodName = m->getName();
+        if (strcmp(methodName, name) == 0) {
+            auto count = Il2cpp::GetMethodParamCount(m);
+            for (int i = 0; i < args.size(); i++) {
+                Il2CppType *arg = Il2cpp::GetMethodParam(m, i);
+                if (arg) {
+                    auto typeName = arg->getName();
+                    if (strcmp(typeName, args[i].c_str()) == 0) {
+                        matched++;
+                    } else {
+                        LOGD(
+                                            "Argument at index %d didn't matched requested "
+                                            "argument!\n\tRequested: %s\n\tActual: "
+                                            "%s\nnSkipping function...",
+                                            i, args[i].c_str(), typeName);
+                        matched = 0;
+                        break;
+                    }
+                }
+            }
+        }
+        if (matched == args.size()) {
+            LOGD("%s - [%s] %s::%s: %p",
+                 getImage()->getName(),getNamespace(),getName(),name,m);
+            return m;
+        }
+    }
+    return nullptr;
 }
 
 std::vector<MethodInfo *> Il2CppClass::getMethods(const char *filter)
@@ -118,6 +153,30 @@ MethodInfo *MethodInfo::inflate(std::initializer_list<Il2CppClass *> types)
     auto methodObj = this->getObject();
     auto result = methodObj->invoke_method<Il2CppReflectionMethod *>("MakeGenericMethod", array);
     return Il2cpp::GetMethodFromReflection(result);
+}
+
+Il2CppClass *Il2CppClass::inflate(std::initializer_list<Il2CppClass *> types)
+{
+    // TODO: check generic count
+    // if (types.size() != Il2cpp::GetMethodGenericCount(this))
+    // {
+    //     LOGE("Types generic count doesn't match");
+    //     return nullptr;
+    // }
+    static auto corlib = Il2cpp::GetCorlib();
+    static auto systemType = corlib->getClass("System.Type");
+    auto array = Il2cpp::ArrayNewGeneric<Il2CppObject *>(systemType, types.size());
+    int i = 0;
+    for (auto type : types)
+    {
+        auto typeObj = Il2cpp::GetTypeObject(Il2cpp::GetClassType(type));
+        array->data[i] = typeObj;
+        i++;
+    }
+    // auto methodObj = this->getObject();
+    auto obj = Il2cpp::GetTypeObject(Il2cpp::GetClassType(this));
+    auto result = obj->invoke_method<Il2CppReflectionType *>("MakeGenericType", array);
+    return Il2cpp::GetClassFromSystemType(result);
 }
 
 Il2CppObject *MethodInfo::getObject()

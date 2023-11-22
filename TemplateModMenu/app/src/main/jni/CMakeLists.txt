@@ -25,7 +25,8 @@ if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(DOBBY_DEBUG OFF)
     message("Release Mode")
 else ()
-    set(C_FLAGS "${C_FLAGS} -O0")
+    set(C_FLAGS "${C_FLAGS} -O2")
+    set(LINKER_FLAGS "${LINKER_FLAGS}")
     message("Debug Mode")
     add_compile_definitions(__DEBUG__)
 endif ()
@@ -73,8 +74,10 @@ target_link_libraries(MyLibName
         dobby_static
         )
 
-file(CREATE_LINK
-  "${CMAKE_BINARY_DIR}/compile_commands.json"
-  "${CMAKE_SOURCE_DIR}/compile_commands.json"
-  SYMBOLIC
-)
+if(WIN32)
+  # Windows platform detected, perform a copy operation
+  file(COPY "${CMAKE_BINARY_DIR}/compile_commands.json" DESTINATION "${CMAKE_SOURCE_DIR}")
+else()
+  # For non-Windows platforms, create a symbolic link
+  file(CREATE_LINK "${CMAKE_BINARY_DIR}/compile_commands.json" "${CMAKE_SOURCE_DIR}/compile_commands.json" SYMBOLIC)
+endif()

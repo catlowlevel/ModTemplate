@@ -490,6 +490,19 @@ namespace Il2cpp
         return true;
     }
 
+    void Detach()
+    {
+        auto curr = il2cpp_thread_current();
+        if (!curr)
+        {
+            LOGI("Foreign thread!");
+            return;
+        }
+        LOGI("Detaching Thread");
+        il2cpp_thread_detach(curr);
+        LOGI("Thread Detached");
+    }
+
     Il2CppDomain *GetDomain()
     {
         return il2cpp_domain_get();
@@ -700,6 +713,11 @@ namespace Il2cpp
                 return klass;
         }
         return nullptr;
+    }
+
+    Il2CppClass *GetClassFromSystemType(Il2CppReflectionType *type)
+    {
+        return il2cpp_class_from_system_type(type);
     }
 
     Il2CppType *GetMethodReturnType(MethodInfo *method)
