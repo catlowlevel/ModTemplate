@@ -3,6 +3,7 @@
 //
 
 #include "Il2cpp.h"
+#include <chrono>
 #include <dlfcn.h>
 #include <cstdlib>
 #include <cstring>
@@ -14,6 +15,7 @@
 #include <unistd.h>
 #include <unordered_map>
 #include <thread>
+#include "dobby.h"
 #include "il2cpp-tabledefs.h"
 #include "il2cpp-class.h"
 
@@ -868,4 +870,104 @@ namespace Il2cpp
         }
         return imagesCache;
     }
+
+#if __DEBUG__
+    struct Data
+    {
+        std::string name;
+        std::chrono::time_point<std::chrono::system_clock> lastTime;
+        int count;
+        int maxCount;
+    };
+    std::unordered_map<void *, Data *> nameMaps;
+    void Trace(Il2CppImage *image, std::initializer_list<char *> classesName,
+               std::initializer_list<char *> ignoredMethods, bool nearBranchTrampoline, int maxSpam)
+    {
+        for (auto name : classesName)
+        {
+            auto klass = image->getClass(name);
+            if (klass)
+            {
+                for (auto m : klass->getMethods())
+                {
+                    auto str = klass->getFullName() + "::" + m->getName();
+                    bool skip = std::any_of(ignoredMethods.begin(), ignoredMethods.end(),
+                                            [&](auto s) { return strstr(m->getName(), s) != nullptr; });
+                    // for (auto ignored : ignoredMethods)
+                    // {
+                    //     if (strstr(m->getName(), ignored) != nullptr)
+                    //     {
+                    //         LOGD("Ignoring %s", str.c_str());
+                    //         skip = true;
+                    //         continue;
+                    //     }
+                    // }
+                    if (skip)
+                    {
+                        LOGD("Ignoring %s", str.c_str());
+                        continue;
+                    }
+                    // bool near = std::any_of(nearBranchTrampoline.begin(), nearBranchTrampoline.end(),
+                    //                         [&](auto s) { return strstr(m->getName(), s) != nullptr; });
+                    bool near = nearBranchTrampoline;
+                    if (near)
+                    {
+                        LOGD("Tracing ( near ) %s", str.c_str());
+                    }
+                    else
+                    {
+
+                        LOGD("Tracing %s", str.c_str());
+                    }
+                    nameMaps.emplace(m->methodPointer, new Data{str, std::chrono::system_clock::now(), 0, maxSpam});
+
+                    if (near)
+                    {
+                        dobby_enable_near_branch_trampoline();
+                    }
+                    auto result = DobbyInstrument(
+                        m->methodPointer,
+                        [](void *address, DobbyRegisterContext *ctx)
+                        {
+                            auto it = nameMaps.find(address);
+                            if (it != nameMaps.end())
+                            {
+                                auto now = std::chrono::system_clock::now();
+                                // if this function is called 5 times within 500ms, then remove address
+                                if (std::chrono::duration_cast<std::chrono::milliseconds>(now - it->second->lastTime)
+                                        .count() > 500)
+                                {
+                                    it->second->count = 0;
+                                }
+                                it->second->lastTime = now;
+                                it->second->count++;
+                                if (it->second->maxCount > 0 && it->second->count > it->second->maxCount)
+                                {
+                                    // LOGD("Removing %s", it->second->name.c_str());
+                                    delete it->second;
+                                    nameMaps.erase(it);
+                                    return;
+                                }
+                                LOGD("%s", it->second->name.c_str());
+                            }
+                            else
+                            {
+                                // LOGD("%p NULL", address);
+                            }
+                        });
+                    if (result != 0)
+                    {
+                        LOGE("Failed to instrument %s", str.c_str());
+                    }
+                    if (near)
+                    {
+                        dobby_disable_near_branch_trampoline();
+                    }
+                }
+            }
+            // DobbyInstrument(j, dobby_instrument_callback_t pre_handler)
+        }
+        LOGI("DONE");
+    }
+#endif
 } // namespace Il2cpp

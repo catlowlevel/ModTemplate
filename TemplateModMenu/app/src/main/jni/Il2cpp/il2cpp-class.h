@@ -263,7 +263,7 @@ struct Il2CppClass
 {
     MethodInfo *getMethod(const char *name, size_t argsCount = -1);
 
-    MethodInfo *getMethod(const char *name,std::vector<std::string> args);
+    MethodInfo *getMethod(const char *name, std::vector<std::string> args);
 
     MethodInfo *findMethod(const char *name, size_t idx = 0);
 
@@ -288,6 +288,9 @@ struct Il2CppClass
     Il2CppObject *New();
 
     Il2CppClass *inflate(std::initializer_list<Il2CppClass *> types);
+
+    template <typename T, typename... Args>
+    T invoke_static_method(const char *name, Args &&...args);
 };
 
 struct FieldInfo
@@ -466,4 +469,10 @@ template <typename T>
 Il2CppObject *ValueType<T>::box(Il2CppClass *klass)
 {
     return Il2cpp::GetBoxedValue(klass, this);
+}
+
+template <typename T, typename... Args>
+T Il2CppClass::invoke_static_method(const char *name, Args &&...args)
+{
+    return this->getMethod(name)->invoke_static<T>(std::forward<Args>(args)...);
 }

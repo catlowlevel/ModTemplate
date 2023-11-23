@@ -93,6 +93,11 @@ namespace Il2cpp
 
     // other
     Il2CppObject *GetBoxedValue(Il2CppClass *klass, void *value);
+#if __DEBUG__
+    // this is a Debug function, it should be used as a tool only
+    void Trace(Il2CppImage *image, std::initializer_list<char *> classesName,
+               std::initializer_list<char *> ignoredMethods = {}, bool nearBranchTrampoline = false, int maxSpam = -1);
+#endif
 
     //@formatter:on
     // void il2cpp_dump(const char *outDir);
