@@ -717,8 +717,22 @@ namespace Il2cpp
             return nullptr;
         }
         auto result = il2cpp_class_from_name(image, classNamespace.c_str(), className.c_str());
-        if (!result && g_DoLog)
-            LOGE("There's no class : %s", name);
+        if (!result)
+        {
+            // LOGD("Searching [%s] by iterating through [%s]...", name, image->getName());
+            auto size = il2cpp_image_get_class_count(image);
+            for (size_t i{0}; i < size; i++)
+            {
+                auto klass = il2cpp_image_get_class(image, i);
+                if (klass->getFullName().compare(name) == 0)
+                {
+                    result = klass;
+                    break;
+                }
+            }
+            if (!result && g_DoLog)
+                LOGE("There's no class : %s", name);
+        }
         return result;
     }
 
