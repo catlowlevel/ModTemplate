@@ -102,6 +102,7 @@ jobjectArray GetFeatureList(JNIEnv *env, [[maybe_unused]] jobject context)
     jobjectArray ret;
 
     const char *features[] = {
+        "Button_DUMP",
         OBFUSCATE("Category_The Category"), // Not counted
         OBFUSCATE("Toggle_The toggle"),
         OBFUSCATE("100_Toggle_True_The toggle 2"), // This one have feature number assigned, and switched on by default
@@ -159,7 +160,7 @@ void Changes(JNIEnv *env, [[maybe_unused]] jclass clazz, [[maybe_unused]] jobjec
     {
         case 0:
         {
-            //            g_IncreaseMoney = boolean;
+            Il2cpp::Dump(env);
             break;
         }
         case 1:

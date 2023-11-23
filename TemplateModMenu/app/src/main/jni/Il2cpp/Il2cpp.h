@@ -12,6 +12,8 @@ namespace Il2cpp
     //@formatter:off
 
     void Init();
+    // void Dump(JavaVM *jvm);
+    void Dump(JNIEnv *env);
     bool EnsureAttached();
     void Detach();
 
