@@ -1085,8 +1085,13 @@ namespace Il2cpp
     {
         for (auto name : classesName)
         {
-            auto klass = image->getClass(name);
-            if (klass)
+            auto classes = image->getClasses(name);
+            if (classes.empty())
+            {
+                LOGD("No classes found for %s", name);
+                continue;
+            }
+            for (auto klass : classes)
             {
                 for (auto m : klass->getMethods())
                 {
