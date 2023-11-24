@@ -114,22 +114,22 @@ bool _il2cpp_type_is_byref(Il2CppType *type)
 std::string dump_method(Il2CppClass *klass)
 {
     std::stringstream outPut;
-    outPut << "\n\t// Methods\n";
+    outPut << "\n\t// Methods";
     void *iter = nullptr;
     while (auto method = il2cpp_class_get_methods(klass, &iter))
     {
         // TODO attribute
-        if (method->methodPointer)
-        {
-            outPut << "\t// RVA: 0x";
-            outPut << std::hex << (uint64_t)method->methodPointer - il2cpp_base;
-            outPut << " VA: 0x";
-            outPut << std::hex << (uint64_t)method->methodPointer;
-        }
-        else
-        {
-            outPut << "\t// RVA: 0x VA: 0x0";
-        }
+        // if (method->methodPointer)
+        // {
+        //     outPut << "\t// RVA: 0x";
+        //     outPut << std::hex << (uint64_t)method->methodPointer - il2cpp_base;
+        //     outPut << " VA: 0x";
+        //     outPut << std::hex << (uint64_t)method->methodPointer;
+        // }
+        // else
+        // {
+        //     outPut << "\t// RVA: 0x VA: 0x0";
+        // }
         /*if (method->slot != 65535) {
             outPut << " Slot: " << std::dec << method->slot;
         }*/
@@ -184,7 +184,16 @@ std::string dump_method(Il2CppClass *klass)
         {
             outPut.seekp(-2, outPut.cur);
         }
-        outPut << ") { }\n";
+        outPut << "); // ";
+        if (method->methodPointer)
+        {
+            outPut << "0x";
+            outPut << std::hex << (uint64_t)method->methodPointer - il2cpp_base;
+        }
+        else
+        {
+            outPut << "0x0";
+        }
         // TODO GenericInstMethod
     }
     return outPut.str();
@@ -305,7 +314,7 @@ std::string dump_type(Il2CppType *type)
 {
     std::stringstream outPut;
     auto *klass = il2cpp_class_from_type(type);
-    outPut << "\n// Namespace: " << il2cpp_class_get_namespace(klass) << "\n";
+    // outPut << "\n// Namespace: " << il2cpp_class_get_namespace(klass) << "\n";
     auto flags = il2cpp_class_get_flags(klass);
     if (flags & TYPE_ATTRIBUTE_SERIALIZABLE)
     {
@@ -364,6 +373,11 @@ std::string dump_type(Il2CppType *type)
     {
         outPut << "class ";
     }
+    auto namespaze = il2cpp_class_get_namespace(klass);
+    if (namespaze && strlen(namespaze) > 0)
+    {
+        outPut << namespaze << ".";
+    }
     outPut << il2cpp_class_get_name(klass); // TODO genericContainerIndex
     std::vector<std::string> extends;
     auto parent = il2cpp_class_get_parent(klass);
@@ -390,10 +404,10 @@ std::string dump_type(Il2CppType *type)
     }
     outPut << "\n{";
     outPut << dump_field(klass);
-    outPut << dump_property(klass);
+    // outPut << dump_property(klass);
     outPut << dump_method(klass);
     // TODO EventInfo
-    outPut << "}\n";
+    outPut << "\n}\n";
     return outPut.str();
 }
 
@@ -404,11 +418,11 @@ void il2cpp_dump(const char *outDir)
     auto domain = il2cpp_domain_get();
     auto assemblies = il2cpp_domain_get_assemblies(domain, &size);
     std::stringstream imageOutput;
-    for (int i = 0; i < size; ++i)
-    {
-        auto image = il2cpp_assembly_get_image(assemblies[i]);
-        imageOutput << "// Image " << i << ": " << il2cpp_image_get_name(image) << "\n";
-    }
+    // for (int i = 0; i < size; ++i)
+    // {
+    //     auto image = il2cpp_assembly_get_image(assemblies[i]);
+    //     imageOutput << "// Image " << i << ": " << il2cpp_image_get_name(image) << "\n";
+    // }
     std::vector<std::string> outPuts;
     if (il2cpp_image_get_class)
     {
@@ -418,7 +432,7 @@ void il2cpp_dump(const char *outDir)
         {
             auto image = il2cpp_assembly_get_image(assemblies[i]);
             std::stringstream imageStr;
-            imageStr << "\n// Dll : " << il2cpp_image_get_name(image);
+            imageStr << "\n// " << il2cpp_image_get_name(image) << "\n";
             auto classCount = il2cpp_image_get_class_count(image);
             for (int j = 0; j < classCount; ++j)
             {
@@ -464,7 +478,7 @@ void il2cpp_dump(const char *outDir)
             auto image = il2cpp_assembly_get_image(assemblies[i]);
             std::stringstream imageStr;
             auto image_name = il2cpp_image_get_name(image);
-            imageStr << "\n// Dll : " << image_name;
+            imageStr << "\n// " << image_name;
             // LOGD("image name : %s", image->name);
             auto imageName = std::string(image_name);
             auto pos = imageName.rfind('.');
