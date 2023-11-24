@@ -36,6 +36,11 @@ Il2CppClass *Il2CppImage::getClass(const char *name, int subClass)
     return Il2cpp::GetClass(this, name, subClass);
 }
 
+std::vector<Il2CppClass *> Il2CppImage::getClasses(const char *filter)
+{
+    return Il2cpp::GetClasses(this, filter);
+}
+
 const char *Il2CppImage::getName()
 {
     return Il2cpp::GetImageName(this);
@@ -46,35 +51,41 @@ MethodInfo *Il2CppClass::getMethod(const char *name, size_t argsCount)
     return Il2cpp::GetClassMethod(this, name, argsCount);
 }
 
-MethodInfo *Il2CppClass::getMethod(const char *name, std::vector<std::string> args) {
+MethodInfo *Il2CppClass::getMethod(const char *name, std::vector<std::string> args)
+{
 
     for (auto m : this->getMethods())
     {
         int matched = 0;
         const char *methodName = m->getName();
-        if (strcmp(methodName, name) == 0) {
+        if (strcmp(methodName, name) == 0)
+        {
             auto count = Il2cpp::GetMethodParamCount(m);
-            for (int i = 0; i < args.size(); i++) {
+            for (int i = 0; i < args.size(); i++)
+            {
                 Il2CppType *arg = Il2cpp::GetMethodParam(m, i);
-                if (arg) {
+                if (arg)
+                {
                     auto typeName = arg->getName();
-                    if (strcmp(typeName, args[i].c_str()) == 0) {
+                    if (strcmp(typeName, args[i].c_str()) == 0)
+                    {
                         matched++;
-                    } else {
-                        LOGD(
-                                            "Argument at index %d didn't matched requested "
-                                            "argument!\n\tRequested: %s\n\tActual: "
-                                            "%s\nnSkipping function...",
-                                            i, args[i].c_str(), typeName);
+                    }
+                    else
+                    {
+                        LOGD("Argument at index %d didn't matched requested "
+                             "argument!\n\tRequested: %s\n\tActual: "
+                             "%s\nnSkipping function...",
+                             i, args[i].c_str(), typeName);
                         matched = 0;
                         break;
                     }
                 }
             }
         }
-        if (matched == args.size()) {
-            LOGD("%s - [%s] %s::%s: %p",
-                 getImage()->getName(),getNamespace(),getName(),name,m);
+        if (matched == args.size())
+        {
+            LOGD("%s - [%s] %s::%s: %p", getImage()->getName(), getNamespace(), getName(), name, m);
             return m;
         }
     }

@@ -256,6 +256,8 @@ struct Il2CppImage
 {
     Il2CppClass *getClass(const char *name, int subClass = 0);
 
+    std::vector<Il2CppClass *> getClasses(const char *filter = nullptr);
+
     const char *getName();
 };
 

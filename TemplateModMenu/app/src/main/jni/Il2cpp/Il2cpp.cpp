@@ -830,6 +830,19 @@ namespace Il2cpp
         return il2cpp_method_get_param_name(method, index);
     }
 
+    std::vector<Il2CppClass *> GetClasses(Il2CppImage *image, const char *filter)
+    {
+        std::vector<Il2CppClass *> classes;
+        auto size = il2cpp_image_get_class_count(image);
+        for (size_t i{0}; i < size; i++)
+        {
+            auto klass = il2cpp_image_get_class(image, i);
+            if (!filter || strstr(klass->getFullName().c_str(), filter))
+                classes.push_back(klass);
+        }
+        return classes;
+    }
+
     const char *GetMethodName(MethodInfo *method)
     {
         return il2cpp_method_get_name(method);
