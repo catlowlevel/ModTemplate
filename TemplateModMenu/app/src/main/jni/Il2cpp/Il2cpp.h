@@ -101,6 +101,8 @@ namespace Il2cpp
     void Trace(Il2CppImage *image, std::function<bool(Il2CppClass *)> filterClasses,
                std::function<bool(MethodInfo *)> filterMethods = nullptr, bool nearBranchTrampoline = false,
                int maxSpam = -1);
+    void Trace(Il2CppImage *image, std::initializer_list<const char *> classesFilter,
+               std::initializer_list<const char *> methodsFilter, bool nearBranchTrampoline = false, int maxSpam = -1);
 #endif
 
     //@formatter:on

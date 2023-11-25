@@ -1092,7 +1092,7 @@ namespace Il2cpp
         }
         for (auto klass : classes)
         {
-            if (!filterClasses(klass))
+            if (filterClasses && !filterClasses(klass))
                 continue;
             for (auto m : klass->getMethods())
             {
@@ -1142,7 +1142,7 @@ namespace Il2cpp
                 }
                 else
                 {
-                traceCount++;
+                    traceCount++;
                     if (near)
                     {
                         LOGD("Tracing ( near ) %s", str.c_str());
@@ -1161,6 +1161,35 @@ namespace Il2cpp
         }
         // DobbyInstrument(j, dobby_instrument_callback_t pre_handler)
         LOGI("DONE Traced %d methods", traceCount);
+    }
+    void Trace(Il2CppImage *image, std::initializer_list<const char *> classesFilter,
+               std::initializer_list<const char *> methodsFilter, bool nearBranchTrampoline, int maxSpam)
+    {
+        Trace(
+            image,
+            [&classesFilter](Il2CppClass *klass)
+            {
+                if (classesFilter.size() == 0)
+                    return true;
+                for (auto name : classesFilter)
+                {
+                    if (std::strstr(klass->getFullName().c_str(), name))
+                        return true;
+                }
+                return false;
+            },
+            [&methodsFilter](MethodInfo *m)
+            {
+                if (methodsFilter.size() == 0)
+                    return true;
+                for (auto name : methodsFilter)
+                {
+                    if (std::strstr(m->getName(), name))
+                        return true;
+                }
+                return false;
+            },
+            nearBranchTrampoline, maxSpam);
     }
 #endif
 } // namespace Il2cpp
