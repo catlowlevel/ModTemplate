@@ -297,7 +297,7 @@ std::string dump_field(Il2CppClass *klass)
         }
         auto field_type = il2cpp_field_get_type(field);
         auto field_class = il2cpp_class_from_type(field_type);
-        outPut << il2cpp_class_get_name(field_class) << " " << il2cpp_field_get_name(field);
+        outPut << il2cpp_type_get_name(field_type) << " " << il2cpp_field_get_name(field);
         // TODO 获取构造函数初始化后的字段值
         if (attrs & FIELD_ATTRIBUTE_LITERAL && is_enum)
         {
