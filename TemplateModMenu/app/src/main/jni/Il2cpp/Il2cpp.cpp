@@ -114,22 +114,22 @@ bool _il2cpp_type_is_byref(Il2CppType *type)
 std::string dump_method(Il2CppClass *klass)
 {
     std::stringstream outPut;
-    outPut << "\n\t// Methods\n";
+    outPut << "\n\t// Methods";
     void *iter = nullptr;
     while (auto method = il2cpp_class_get_methods(klass, &iter))
     {
         // TODO attribute
-        if (method->methodPointer)
-        {
-            outPut << "\t// RVA: 0x";
-            outPut << std::hex << (uint64_t)method->methodPointer - il2cpp_base;
-            outPut << " VA: 0x";
-            outPut << std::hex << (uint64_t)method->methodPointer;
-        }
-        else
-        {
-            outPut << "\t// RVA: 0x VA: 0x0";
-        }
+        // if (method->methodPointer)
+        // {
+        //     outPut << "\t// RVA: 0x";
+        //     outPut << std::hex << (uint64_t)method->methodPointer - il2cpp_base;
+        //     outPut << " VA: 0x";
+        //     outPut << std::hex << (uint64_t)method->methodPointer;
+        // }
+        // else
+        // {
+        //     outPut << "\t// RVA: 0x VA: 0x0";
+        // }
         /*if (method->slot != 65535) {
             outPut << " Slot: " << std::dec << method->slot;
         }*/
@@ -184,7 +184,16 @@ std::string dump_method(Il2CppClass *klass)
         {
             outPut.seekp(-2, outPut.cur);
         }
-        outPut << ") { }\n";
+        outPut << "); // ";
+        if (method->methodPointer)
+        {
+            outPut << "0x";
+            outPut << std::hex << (uint64_t)method->methodPointer - il2cpp_base;
+        }
+        else
+        {
+            outPut << "0x0";
+        }
         // TODO GenericInstMethod
     }
     return outPut.str();
@@ -288,7 +297,7 @@ std::string dump_field(Il2CppClass *klass)
         }
         auto field_type = il2cpp_field_get_type(field);
         auto field_class = il2cpp_class_from_type(field_type);
-        outPut << il2cpp_class_get_name(field_class) << " " << il2cpp_field_get_name(field);
+        outPut << il2cpp_type_get_name(field_type) << " " << il2cpp_field_get_name(field);
         // TODO 获取构造函数初始化后的字段值
         if (attrs & FIELD_ATTRIBUTE_LITERAL && is_enum)
         {
@@ -305,7 +314,7 @@ std::string dump_type(Il2CppType *type)
 {
     std::stringstream outPut;
     auto *klass = il2cpp_class_from_type(type);
-    outPut << "\n// Namespace: " << il2cpp_class_get_namespace(klass) << "\n";
+    // outPut << "\n// Namespace: " << il2cpp_class_get_namespace(klass) << "\n";
     auto flags = il2cpp_class_get_flags(klass);
     if (flags & TYPE_ATTRIBUTE_SERIALIZABLE)
     {
@@ -364,6 +373,11 @@ std::string dump_type(Il2CppType *type)
     {
         outPut << "class ";
     }
+    auto namespaze = il2cpp_class_get_namespace(klass);
+    if (namespaze && strlen(namespaze) > 0)
+    {
+        outPut << namespaze << ".";
+    }
     outPut << il2cpp_class_get_name(klass); // TODO genericContainerIndex
     std::vector<std::string> extends;
     auto parent = il2cpp_class_get_parent(klass);
@@ -390,10 +404,10 @@ std::string dump_type(Il2CppType *type)
     }
     outPut << "\n{";
     outPut << dump_field(klass);
-    outPut << dump_property(klass);
+    // outPut << dump_property(klass);
     outPut << dump_method(klass);
     // TODO EventInfo
-    outPut << "}\n";
+    outPut << "\n}\n";
     return outPut.str();
 }
 
@@ -404,11 +418,11 @@ void il2cpp_dump(const char *outDir)
     auto domain = il2cpp_domain_get();
     auto assemblies = il2cpp_domain_get_assemblies(domain, &size);
     std::stringstream imageOutput;
-    for (int i = 0; i < size; ++i)
-    {
-        auto image = il2cpp_assembly_get_image(assemblies[i]);
-        imageOutput << "// Image " << i << ": " << il2cpp_image_get_name(image) << "\n";
-    }
+    // for (int i = 0; i < size; ++i)
+    // {
+    //     auto image = il2cpp_assembly_get_image(assemblies[i]);
+    //     imageOutput << "// Image " << i << ": " << il2cpp_image_get_name(image) << "\n";
+    // }
     std::vector<std::string> outPuts;
     if (il2cpp_image_get_class)
     {
@@ -418,7 +432,7 @@ void il2cpp_dump(const char *outDir)
         {
             auto image = il2cpp_assembly_get_image(assemblies[i]);
             std::stringstream imageStr;
-            imageStr << "\n// Dll : " << il2cpp_image_get_name(image);
+            imageStr << "\n// " << il2cpp_image_get_name(image) << "\n";
             auto classCount = il2cpp_image_get_class_count(image);
             for (int j = 0; j < classCount; ++j)
             {
@@ -464,7 +478,7 @@ void il2cpp_dump(const char *outDir)
             auto image = il2cpp_assembly_get_image(assemblies[i]);
             std::stringstream imageStr;
             auto image_name = il2cpp_image_get_name(image);
-            imageStr << "\n// Dll : " << image_name;
+            imageStr << "\n// " << image_name;
             // LOGD("image name : %s", image->name);
             auto imageName = std::string(image_name);
             auto pos = imageName.rfind('.');
@@ -816,6 +830,19 @@ namespace Il2cpp
         return il2cpp_method_get_param_name(method, index);
     }
 
+    std::vector<Il2CppClass *> GetClasses(Il2CppImage *image, const char *filter)
+    {
+        std::vector<Il2CppClass *> classes;
+        auto size = il2cpp_image_get_class_count(image);
+        for (size_t i{0}; i < size; i++)
+        {
+            auto klass = il2cpp_image_get_class(image, i);
+            if (!filter || strstr(klass->getFullName().c_str(), filter))
+                classes.push_back(klass);
+        }
+        return classes;
+    }
+
     const char *GetMethodName(MethodInfo *method)
     {
         return il2cpp_method_get_name(method);
@@ -1053,36 +1080,69 @@ namespace Il2cpp
         int maxCount;
     };
     std::unordered_map<void *, Data *> nameMaps;
-    void Trace(Il2CppImage *image, std::initializer_list<char *> classesName,
-               std::initializer_list<char *> ignoredMethods, bool nearBranchTrampoline, int maxSpam)
+    void Trace(Il2CppImage *image, std::function<bool(Il2CppClass *)> filterClasses,
+               std::function<bool(MethodInfo *)> filterMethods, bool nearBranchTrampoline, int maxSpam)
     {
-        for (auto name : classesName)
+        auto classes = image->getClasses();
+        auto traceCount = 0;
+        if (classes.empty())
         {
-            auto klass = image->getClass(name);
-            if (klass)
+            LOGE("Image %s has no classes", image->getName());
+            return;
+        }
+        for (auto klass : classes)
+        {
+            if (filterClasses && !filterClasses(klass))
+                continue;
+            for (auto m : klass->getMethods())
             {
-                for (auto m : klass->getMethods())
+                if (filterMethods && !filterMethods(m))
+                    continue;
+                auto str = klass->getFullName() + "::" + m->getName();
+                bool near = nearBranchTrampoline;
+                nameMaps.emplace(m->methodPointer, new Data{str, std::chrono::system_clock::now(), 0, maxSpam});
+
+                if (near)
                 {
-                    auto str = klass->getFullName() + "::" + m->getName();
-                    bool skip = std::any_of(ignoredMethods.begin(), ignoredMethods.end(),
-                                            [&](auto s) { return strstr(m->getName(), s) != nullptr; });
-                    // for (auto ignored : ignoredMethods)
-                    // {
-                    //     if (strstr(m->getName(), ignored) != nullptr)
-                    //     {
-                    //         LOGD("Ignoring %s", str.c_str());
-                    //         skip = true;
-                    //         continue;
-                    //     }
-                    // }
-                    if (skip)
+                    dobby_enable_near_branch_trampoline();
+                }
+                auto result = DobbyInstrument(
+                    m->methodPointer,
+                    [](void *address, DobbyRegisterContext *ctx)
                     {
-                        LOGD("Ignoring %s", str.c_str());
-                        continue;
-                    }
-                    // bool near = std::any_of(nearBranchTrampoline.begin(), nearBranchTrampoline.end(),
-                    //                         [&](auto s) { return strstr(m->getName(), s) != nullptr; });
-                    bool near = nearBranchTrampoline;
+                        auto it = nameMaps.find(address);
+                        if (it != nameMaps.end())
+                        {
+                            auto now = std::chrono::system_clock::now();
+                            // if this function is called more than maxCount times within 500ms, then remove address
+                            if (std::chrono::duration_cast<std::chrono::milliseconds>(now - it->second->lastTime)
+                                    .count() > 500)
+                            {
+                                it->second->count = 0;
+                            }
+                            it->second->lastTime = now;
+                            it->second->count++;
+                            if (it->second->maxCount > 0 && it->second->count > it->second->maxCount)
+                            {
+                                // LOGD("Removing %s", it->second->name.c_str());
+                                delete it->second;
+                                nameMaps.erase(it);
+                                return;
+                            }
+                            LOGD("%s", it->second->name.c_str());
+                        }
+                        else
+                        {
+                            // LOGD("%p NULL", address);
+                        }
+                    });
+                if (result != 0)
+                {
+                    LOGE("Failed to instrument %s", str.c_str());
+                }
+                else
+                {
+                    traceCount++;
                     if (near)
                     {
                         LOGD("Tracing ( near ) %s", str.c_str());
@@ -1092,55 +1152,44 @@ namespace Il2cpp
 
                         LOGD("Tracing %s", str.c_str());
                     }
-                    nameMaps.emplace(m->methodPointer, new Data{str, std::chrono::system_clock::now(), 0, maxSpam});
-
-                    if (near)
-                    {
-                        dobby_enable_near_branch_trampoline();
-                    }
-                    auto result = DobbyInstrument(
-                        m->methodPointer,
-                        [](void *address, DobbyRegisterContext *ctx)
-                        {
-                            auto it = nameMaps.find(address);
-                            if (it != nameMaps.end())
-                            {
-                                auto now = std::chrono::system_clock::now();
-                                // if this function is called 5 times within 500ms, then remove address
-                                if (std::chrono::duration_cast<std::chrono::milliseconds>(now - it->second->lastTime)
-                                        .count() > 500)
-                                {
-                                    it->second->count = 0;
-                                }
-                                it->second->lastTime = now;
-                                it->second->count++;
-                                if (it->second->maxCount > 0 && it->second->count > it->second->maxCount)
-                                {
-                                    // LOGD("Removing %s", it->second->name.c_str());
-                                    delete it->second;
-                                    nameMaps.erase(it);
-                                    return;
-                                }
-                                LOGD("%s", it->second->name.c_str());
-                            }
-                            else
-                            {
-                                // LOGD("%p NULL", address);
-                            }
-                        });
-                    if (result != 0)
-                    {
-                        LOGE("Failed to instrument %s", str.c_str());
-                    }
-                    if (near)
-                    {
-                        dobby_disable_near_branch_trampoline();
-                    }
+                }
+                if (near)
+                {
+                    dobby_disable_near_branch_trampoline();
                 }
             }
-            // DobbyInstrument(j, dobby_instrument_callback_t pre_handler)
         }
-        LOGI("DONE");
+        // DobbyInstrument(j, dobby_instrument_callback_t pre_handler)
+        LOGI("DONE Traced %d methods", traceCount);
+    }
+    void Trace(Il2CppImage *image, std::initializer_list<const char *> classesFilter,
+               std::initializer_list<const char *> methodsFilter, bool nearBranchTrampoline, int maxSpam)
+    {
+        Trace(
+            image,
+            [&classesFilter](Il2CppClass *klass)
+            {
+                if (classesFilter.size() == 0)
+                    return true;
+                for (auto name : classesFilter)
+                {
+                    if (std::strstr(klass->getFullName().c_str(), name))
+                        return true;
+                }
+                return false;
+            },
+            [&methodsFilter](MethodInfo *m)
+            {
+                if (methodsFilter.size() == 0)
+                    return true;
+                for (auto name : methodsFilter)
+                {
+                    if (std::strstr(m->getName(), name))
+                        return true;
+                }
+                return false;
+            },
+            nearBranchTrampoline, maxSpam);
     }
 #endif
 } // namespace Il2cpp

@@ -36,6 +36,7 @@ namespace Il2cpp
     const char *GetClassName(Il2CppClass *klass);
     const char *GetClassNamespace(Il2CppClass *klass);
     std::vector<Il2CppClass *> GetClasses();
+    std::vector<Il2CppClass *> GetClasses(Il2CppImage *image, const char *filter = nullptr);
     const std::tuple<Il2CppClass **, size_t> &GetSubClasses(Il2CppClass *klass);
     Il2CppType *GetClassType(Il2CppClass *klass);
     bool GetClassIsGeneric(Il2CppClass *klass);
@@ -97,8 +98,11 @@ namespace Il2cpp
     Il2CppObject *GetBoxedValue(Il2CppClass *klass, void *value);
 #if __DEBUG__
     // this is a Debug function, it should be used as a tool only
-    void Trace(Il2CppImage *image, std::initializer_list<char *> classesName,
-               std::initializer_list<char *> ignoredMethods = {}, bool nearBranchTrampoline = false, int maxSpam = -1);
+    void Trace(Il2CppImage *image, std::function<bool(Il2CppClass *)> filterClasses,
+               std::function<bool(MethodInfo *)> filterMethods = nullptr, bool nearBranchTrampoline = false,
+               int maxSpam = -1);
+    void Trace(Il2CppImage *image, std::initializer_list<const char *> classesFilter,
+               std::initializer_list<const char *> methodsFilter, bool nearBranchTrampoline = false, int maxSpam = -1);
 #endif
 
     //@formatter:on
