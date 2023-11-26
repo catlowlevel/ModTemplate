@@ -1192,7 +1192,8 @@ namespace Il2cpp
                 if (filterMethods && !filterMethods(m))
                     continue;
                 auto str = klass->getFullName() + "::" + m->getName();
-                if (!interceptor->attach(m->methodPointer, listener,
+                if (!m->methodPointer ||
+                    !interceptor->attach(m->methodPointer, listener,
                                          new TracerData{m, std::chrono::system_clock::now(), 0, maxSpam, false}))
                 {
                     LOGE("Failed to instrument %s", str.c_str());
