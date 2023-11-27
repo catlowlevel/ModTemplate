@@ -26,12 +26,10 @@ if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
     # set(C_FLAGS "${C_FLAGS} -O2 -fvisibility=hidden -fvisibility-inlines-hidden")
     # set(LINKER_FLAGS "${LINKER_FLAGS} -Wl,-exclude-libs,ALL -Wl,--gc-sections -Wl,--strip-all")
     set(DOBBY_DEBUG OFF)
-    set(USE_FRIDA OFF)  # Disable Frida in Release mode
     message("Release Mode")
 else ()
     # set(C_FLAGS "${C_FLAGS} -O2")
     # set(LINKER_FLAGS "${LINKER_FLAGS}")
-    set(USE_FRIDA ON)   # Enable Frida in Debug mode
     message("Debug Mode")
     add_compile_definitions(__DEBUG__)
 endif ()
@@ -61,40 +59,23 @@ set(LOCAL_SRC_FILES
         Il2cpp/xdl/xdl_linker.c
         Il2cpp/xdl/xdl_lzma.c
         Il2cpp/xdl/xdl_util.c
-)
+        )
 
 # Add include directories
 include_directories(${SRC_DIR})
 
 add_subdirectory(Dobby)
+# Add the shared library
+add_library(MyLibName SHARED ${LOCAL_SRC_FILES})
 
-if(USE_FRIDA)
-    set(LOCAL_SRC_FILES ${LOCAL_SRC_FILES}
-        frida/gumpp/runtime.cpp
-        frida/gumpp/backtracer.cpp
-        frida/gumpp/interceptor.cpp
-        frida/gumpp/invocationlistener.cpp
-        frida/gumpp/returnaddress.cpp
-    )
-    add_library(MyLibName SHARED ${LOCAL_SRC_FILES})
-    target_link_libraries(MyLibName
+# Link required libraries
+target_link_libraries(MyLibName
         log
         android
         EGL
         GLESv2
         dobby_static
-        ${CMAKE_SOURCE_DIR}/frida/libfrida-gum.a
-    )
-else()
-    add_library(MyLibName SHARED ${LOCAL_SRC_FILES})
-    target_link_libraries(MyLibName
-        log
-        android
-        EGL
-        GLESv2
-        dobby_static
-    )
-endif()
+        )
 
 if(WIN32)
   # Windows platform detected, perform a copy operation

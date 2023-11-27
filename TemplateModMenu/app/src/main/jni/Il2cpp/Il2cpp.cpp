@@ -17,7 +17,6 @@
 #include <unordered_map>
 #include <thread>
 #include "dobby.h"
-#include "frida/gumpp/gumpp.hpp"
 #include "il2cpp-tabledefs.h"
 #include "il2cpp-class.h"
 
@@ -555,19 +554,6 @@ class PauseLog
 };
 #define PAUSE_LOG PauseLog _
 
-std::string repeatString(const std::string &str, int n)
-{
-    std::string result;
-    result.reserve(str.length() * n);
-
-    for (int i = 0; i < n; ++i)
-    {
-        result.append(str);
-    }
-
-    return result;
-}
-
 namespace Il2cpp
 {
     void Init()
@@ -1086,91 +1072,16 @@ namespace Il2cpp
     }
 
 #if __DEBUG__
-    struct TracerData
+    struct Data
     {
-        MethodInfo *m;
+        std::string name;
         std::chrono::time_point<std::chrono::system_clock> lastTime;
         int count;
         int maxCount;
-        bool skip;
     };
-    class TracerLintener : public Gum::InvocationListener
-    {
-      public:
-        TracerLintener()
-        {
-        }
-
-        virtual void on_enter(Gum::InvocationContext *context)
-        {
-            auto data = (TracerData *)context->get_listener_function_data_ptr();
-            auto m = data->m;
-            if (!data->skip)
-            {
-                auto now = std::chrono::system_clock::now();
-                if (std::chrono::duration_cast<std::chrono::milliseconds>(now - data->lastTime).count() > 500)
-                {
-                    data->count = 0;
-                }
-                data->lastTime = now;
-                data->count++;
-                if (data->maxCount > 0 && data->count > data->maxCount)
-                {
-                    data->skip = true;
-                    return;
-                }
-
-                auto indent = repeatString("│ ", depth++);
-                LOGD("%s%s%s::%s", indent.c_str(), "┌─", m->getClass()->getFullName().c_str(), m->getName());
-            }
-        }
-
-        virtual void on_leave(Gum::InvocationContext *context)
-        {
-            auto data = (TracerData *)context->get_listener_function_data_ptr();
-            if (data->skip)
-                return;
-            auto indent = repeatString("│ ", --depth);
-            LOGD("%s%s%s::%s", indent.c_str(), "└─", data->m->getClass()->getFullName().c_str(), data->m->getName());
-            // TODO: Improve this
-            //  auto returnType = data->m->getReturnType()->getName();
-            //  if (strcmp(returnType, "System.Int32") == 0)
-            //  {
-            //      int32_t *returnValue = context->get_return_value<int32_t *>();
-            //      LOGD("%s%s%s::%s = %d", indent.c_str(), "└─", data->m->getClass()->getFullName().c_str(),
-            //           data->m->getName(), &returnValue);
-            //  }
-            //  else if (strcmp(returnType, "System.Int64") == 0)
-            //  {
-            //      int64_t *returnValue = context->get_return_value<int64_t *>();
-            //      LOGD("%s%s%s::%s = %lld", indent.c_str(), "└─", data->m->getClass()->getFullName().c_str(),
-            //           data->m->getName(), &returnValue);
-            //  }
-            //  else if (strcmp(returnType, "System.Single") == 0)
-            //  {
-            //      float *returnValue = context->get_return_value<float *>();
-            //      LOGD("%s%s%s::%s = %f", indent.c_str(), "└─", data->m->getClass()->getFullName().c_str(),
-            //           data->m->getName(), &returnValue);
-            //  }
-            //  else if (strcmp(returnType, "System.Double") == 0)
-            //  {
-            //      double *returnValue = context->get_return_value<double *>();
-            //      LOGD("%s%s%s::%s = %lf", indent.c_str(), "└─", data->m->getClass()->getFullName().c_str(),
-            //           data->m->getName(), &returnValue);
-            //  }
-            //  else
-            //  {
-            //      LOGD("%s%s%s::%s", indent.c_str(), "└─", data->m->getClass()->getFullName().c_str(),
-            //           data->m->getName());
-            //  }
-        }
-        static int depth;
-        static std::unordered_map<void *, TracerData *> spamCounter;
-    };
-    int TracerLintener::depth = 0;
-    std::unordered_map<void *, TracerData *> TracerLintener::spamCounter{};
+    std::unordered_map<void *, Data *> nameMaps;
     void Trace(Il2CppImage *image, std::function<bool(Il2CppClass *)> filterClasses,
-               std::function<bool(MethodInfo *)> filterMethods, int maxSpam)
+               std::function<bool(MethodInfo *)> filterMethods, bool nearBranchTrampoline, int maxSpam)
     {
         auto classes = image->getClasses();
         auto traceCount = 0;
@@ -1179,10 +1090,6 @@ namespace Il2cpp
             LOGE("Image %s has no classes", image->getName());
             return;
         }
-
-        Gum::RefPtr<Gum::Interceptor> interceptor(Gum::Interceptor_obtain());
-
-        TracerLintener *listener = new TracerLintener();
         for (auto klass : classes)
         {
             if (filterClasses && !filterClasses(klass))
@@ -1192,23 +1099,71 @@ namespace Il2cpp
                 if (filterMethods && !filterMethods(m))
                     continue;
                 auto str = klass->getFullName() + "::" + m->getName();
-                if (!m->methodPointer ||
-                    !interceptor->attach(m->methodPointer, listener,
-                                         new TracerData{m, std::chrono::system_clock::now(), 0, maxSpam, false}))
+                bool near = nearBranchTrampoline;
+                nameMaps.emplace(m->methodPointer, new Data{str, std::chrono::system_clock::now(), 0, maxSpam});
+
+                if (near)
+                {
+                    dobby_enable_near_branch_trampoline();
+                }
+                auto result = DobbyInstrument(
+                    m->methodPointer,
+                    [](void *address, DobbyRegisterContext *ctx)
+                    {
+                        auto it = nameMaps.find(address);
+                        if (it != nameMaps.end())
+                        {
+                            auto now = std::chrono::system_clock::now();
+                            // if this function is called more than maxCount times within 500ms, then remove address
+                            if (std::chrono::duration_cast<std::chrono::milliseconds>(now - it->second->lastTime)
+                                    .count() > 500)
+                            {
+                                it->second->count = 0;
+                            }
+                            it->second->lastTime = now;
+                            it->second->count++;
+                            if (it->second->maxCount > 0 && it->second->count > it->second->maxCount)
+                            {
+                                // LOGD("Removing %s", it->second->name.c_str());
+                                delete it->second;
+                                nameMaps.erase(it);
+                                return;
+                            }
+                            LOGD("%s", it->second->name.c_str());
+                        }
+                        else
+                        {
+                            // LOGD("%p NULL", address);
+                        }
+                    });
+                if (result != 0)
                 {
                     LOGE("Failed to instrument %s", str.c_str());
                 }
                 else
                 {
                     traceCount++;
-                    LOGD("Tracing %s", str.c_str());
+                    if (near)
+                    {
+                        LOGD("Tracing ( near ) %s", str.c_str());
+                    }
+                    else
+                    {
+
+                        LOGD("Tracing %s", str.c_str());
+                    }
+                }
+                if (near)
+                {
+                    dobby_disable_near_branch_trampoline();
                 }
             }
         }
+        // DobbyInstrument(j, dobby_instrument_callback_t pre_handler)
         LOGI("DONE Traced %d methods", traceCount);
     }
     void Trace(Il2CppImage *image, std::initializer_list<const char *> classesFilter,
-               std::initializer_list<const char *> methodsFilter, int maxSpam)
+               std::initializer_list<const char *> methodsFilter, bool nearBranchTrampoline, int maxSpam)
     {
         Trace(
             image,
@@ -1234,7 +1189,7 @@ namespace Il2cpp
                 }
                 return false;
             },
-            maxSpam);
+            nearBranchTrampoline, maxSpam);
     }
 #endif
 } // namespace Il2cpp
