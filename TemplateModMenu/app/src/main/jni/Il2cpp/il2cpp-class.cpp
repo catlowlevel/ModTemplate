@@ -16,14 +16,23 @@ const char *Il2CppClass::getName()
 
 std::string Il2CppClass::getFullName()
 {
-    std::string name = this->getName();
-    std::string_view namespaze = getNamespace();
-    if (!namespaze.empty())
+    auto typeName = Il2cpp::GetClassType(this)->getName();
+    // im sure i've encounter a case where `typeName` is nullptr
+    if (typeName && strlen(typeName) > 0)
     {
-        name.insert(0, ".");
-        name.insert(0, namespaze);
+        return typeName;
     }
-    return name;
+    else
+    {
+        std::string name = this->getName();
+        std::string_view namespaze = getNamespace();
+        if (!namespaze.empty())
+        {
+            name.insert(0, ".");
+            name.insert(0, namespaze);
+        }
+        return name;
+    }
 }
 
 Il2CppImage *Il2CppAssembly::getImage()
