@@ -380,7 +380,15 @@ std::string dump_type(Il2CppType *type)
     {
         outPut << namespaze << ".";
     }
-    outPut << il2cpp_class_get_name(klass); // TODO genericContainerIndex
+    auto type_name = il2cpp_type_get_name(type);
+    if (type_name && strlen(type_name) > 0)
+    {
+        outPut << type_name;
+    }
+    else
+    {
+        outPut << il2cpp_class_get_name(klass); // TODO genericContainerIndex
+    }
     std::vector<std::string> extends;
     auto parent = il2cpp_class_get_parent(klass);
     if (!is_valuetype && !is_enum && parent)
@@ -396,9 +404,10 @@ std::string dump_type(Il2CppType *type)
     {
         extends.emplace_back(il2cpp_class_get_name(itf));
     }
+    outPut << " : ";
     if (!extends.empty())
     {
-        outPut << " : " << extends[0];
+        outPut << extends[0];
         for (int i = 1; i < extends.size(); ++i)
         {
             outPut << ", " << extends[i];
