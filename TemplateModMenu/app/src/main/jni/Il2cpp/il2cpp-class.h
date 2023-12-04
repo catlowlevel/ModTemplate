@@ -254,7 +254,7 @@ struct Il2CppAssembly
 
 struct Il2CppImage
 {
-    Il2CppClass *getClass(const char *name, int subClass = 0);
+    Il2CppClass *getClass(const char *name);
 
     std::vector<Il2CppClass *> getClasses(const char *filter = nullptr);
 

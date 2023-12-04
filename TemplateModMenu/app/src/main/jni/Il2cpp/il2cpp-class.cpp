@@ -40,9 +40,9 @@ Il2CppImage *Il2CppAssembly::getImage()
     return Il2cpp::GetImage(this);
 }
 
-Il2CppClass *Il2CppImage::getClass(const char *name, int subClass)
+Il2CppClass *Il2CppImage::getClass(const char *name)
 {
-    return Il2cpp::GetClass(this, name, subClass);
+    return Il2cpp::GetClass(this, name);
 }
 
 std::vector<Il2CppClass *> Il2CppImage::getClasses(const char *filter)

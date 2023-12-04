@@ -22,7 +22,7 @@ namespace Il2cpp
     Il2CppImage *GetCorlib();
     Il2CppImage *GetImage(const char *assemblyName);
     Il2CppAssembly *GetAssembly(const char *name);
-    Il2CppClass *GetClass(Il2CppImage *image, const char *name, int subClass = 0);
+    Il2CppClass *GetClass(Il2CppImage *image, const char *name);
     const std::tuple<Il2CppAssembly **, size_t> &GetAssemblies();
     const std::vector<Il2CppImage *> &GetImages();
 
