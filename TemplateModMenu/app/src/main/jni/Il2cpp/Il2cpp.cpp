@@ -144,8 +144,9 @@ std::string dump_method(Il2CppClass *klass)
         {
             outPut << "ref ";
         }
-        auto return_class = il2cpp_class_from_type(return_type);
-        outPut << il2cpp_class_get_name(return_class) << " " << il2cpp_method_get_name(method) << "(";
+        // auto return_class = il2cpp_class_from_type(return_type);
+        // outPut << il2cpp_class_get_name(return_class) << " " << il2cpp_method_get_name(method) << "(";
+        outPut << il2cpp_type_get_name(return_type) << " " << il2cpp_method_get_name(method) << "(";
         auto param_count = il2cpp_method_get_param_count(method);
         for (int i = 0; i < param_count; ++i)
         {
@@ -177,8 +178,9 @@ std::string dump_method(Il2CppClass *klass)
                     outPut << "[Out] ";
                 }
             }
-            auto parameter_class = il2cpp_class_from_type(param);
-            outPut << il2cpp_class_get_name(parameter_class) << " " << il2cpp_method_get_param_name(method, i);
+            // auto parameter_class = il2cpp_class_from_type(param);
+            // outPut << il2cpp_class_get_name(parameter_class) << " " << il2cpp_method_get_param_name(method, i);
+            outPut << il2cpp_type_get_name(param) << " " << il2cpp_method_get_param_name(method, i);
             outPut << ", ";
         }
         if (param_count > 0)
