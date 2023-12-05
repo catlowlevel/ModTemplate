@@ -3,7 +3,7 @@
 
 // #include <glib-object.h>
 
-#include "frida/frida-gum.h"
+#include "frida-gum.h"
 namespace Gum
 {
   template <class D, class B, typename T>

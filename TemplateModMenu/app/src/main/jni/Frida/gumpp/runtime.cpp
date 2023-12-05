@@ -1,6 +1,6 @@
 #include "runtime.hpp"
 
-#include <frida/frida-gum.h>
+#include <frida-gum.h>
 #ifdef HAVE_WINDOWS
 #include <windows.h>
 #endif

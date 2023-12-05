@@ -17,7 +17,7 @@
 #include <unordered_map>
 #include <thread>
 #include "dobby.h"
-#include "frida/gumpp/gumpp.hpp"
+#include "gumpp.hpp"
 #include "il2cpp-tabledefs.h"
 #include "il2cpp-class.h"
 

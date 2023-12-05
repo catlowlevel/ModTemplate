@@ -5,7 +5,7 @@
 #include "objectwrapper.hpp"
 #include "runtime.hpp"
 
-#include <frida/frida-gum.h>
+#include <frida-gum.h>
 #include <cassert>
 #include <map>
 
