@@ -17,7 +17,7 @@
 #include <unordered_map>
 #include <thread>
 #include "dobby.h"
-#include "frida/gumpp/gumpp.hpp"
+#include "gumpp.hpp"
 #include "il2cpp-tabledefs.h"
 #include "il2cpp-class.h"
 
@@ -144,8 +144,9 @@ std::string dump_method(Il2CppClass *klass)
         {
             outPut << "ref ";
         }
-        auto return_class = il2cpp_class_from_type(return_type);
-        outPut << il2cpp_class_get_name(return_class) << " " << il2cpp_method_get_name(method) << "(";
+        // auto return_class = il2cpp_class_from_type(return_type);
+        // outPut << il2cpp_class_get_name(return_class) << " " << il2cpp_method_get_name(method) << "(";
+        outPut << il2cpp_type_get_name(return_type) << " " << il2cpp_method_get_name(method) << "(";
         auto param_count = il2cpp_method_get_param_count(method);
         for (int i = 0; i < param_count; ++i)
         {
@@ -177,8 +178,9 @@ std::string dump_method(Il2CppClass *klass)
                     outPut << "[Out] ";
                 }
             }
-            auto parameter_class = il2cpp_class_from_type(param);
-            outPut << il2cpp_class_get_name(parameter_class) << " " << il2cpp_method_get_param_name(method, i);
+            // auto parameter_class = il2cpp_class_from_type(param);
+            // outPut << il2cpp_class_get_name(parameter_class) << " " << il2cpp_method_get_param_name(method, i);
+            outPut << il2cpp_type_get_name(param) << " " << il2cpp_method_get_param_name(method, i);
             outPut << ", ";
         }
         if (param_count > 0)
@@ -379,7 +381,15 @@ std::string dump_type(Il2CppType *type)
     {
         outPut << namespaze << ".";
     }
-    outPut << il2cpp_class_get_name(klass); // TODO genericContainerIndex
+    auto type_name = il2cpp_type_get_name(type);
+    if (type_name && strlen(type_name) > 0)
+    {
+        outPut << type_name;
+    }
+    else
+    {
+        outPut << il2cpp_class_get_name(klass); // TODO genericContainerIndex
+    }
     std::vector<std::string> extends;
     auto parent = il2cpp_class_get_parent(klass);
     if (!is_valuetype && !is_enum && parent)
@@ -395,9 +405,10 @@ std::string dump_type(Il2CppType *type)
     {
         extends.emplace_back(il2cpp_class_get_name(itf));
     }
+    outPut << " : ";
     if (!extends.empty())
     {
-        outPut << " : " << extends[0];
+        outPut << extends[0];
         for (int i = 1; i < extends.size(); ++i)
         {
             outPut << ", " << extends[i];
@@ -723,27 +734,12 @@ namespace Il2cpp
         return GetImage(GetAssembly(assemblyName));
     }
 
-    // Example.Game.Class.SubClass.ExtraSubClass
-    // in case class name is "Example.Game.Class.SubClass", then subClass = 1
-    Il2CppClass *GetClass(Il2CppImage *image, const char *name, int subClass)
+    Il2CppClass *GetClass(Il2CppImage *image, const char *name)
     {
         std::string nameStr = name;
         size_t dotIndex = nameStr.find_last_of('.');
         std::string classNamespace = (dotIndex == std::string::npos) ? "" : nameStr.substr(0, dotIndex);
-        bool isSubclass = subClass > 0;
         const std::string className = nameStr.substr(dotIndex + 1);
-        if (isSubclass) // not fully tested
-        {
-            auto klass = GetClass(image, classNamespace.c_str(), subClass - 1);
-            auto &[subKlass, len] = GetSubClasses(klass);
-            for (int i = 0; i < len; ++i)
-            {
-                if (strcmp(subKlass[i]->getName(), className.c_str()) == 0)
-                    return subKlass[i];
-            }
-            LOGE("There's no subclass : %s", name);
-            return nullptr;
-        }
         auto result = il2cpp_class_from_name(image, classNamespace.c_str(), className.c_str());
         if (!result)
         {
@@ -1192,7 +1188,8 @@ namespace Il2cpp
                 if (filterMethods && !filterMethods(m))
                     continue;
                 auto str = klass->getFullName() + "::" + m->getName();
-                if (!interceptor->attach(m->methodPointer, listener,
+                if (!m->methodPointer ||
+                    !interceptor->attach(m->methodPointer, listener,
                                          new TracerData{m, std::chrono::system_clock::now(), 0, maxSpam, false}))
                 {
                     LOGE("Failed to instrument %s", str.c_str());

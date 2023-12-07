@@ -69,12 +69,14 @@ include_directories(${SRC_DIR})
 add_subdirectory(Dobby)
 
 if(USE_FRIDA)
+    include_directories(${CMAKE_SOURCE_DIR}/Frida/${CMAKE_ANDROID_ARCH_ABI})
+    include_directories(${CMAKE_SOURCE_DIR}/Frida/gumpp)
     set(LOCAL_SRC_FILES ${LOCAL_SRC_FILES}
-        frida/gumpp/runtime.cpp
-        frida/gumpp/backtracer.cpp
-        frida/gumpp/interceptor.cpp
-        frida/gumpp/invocationlistener.cpp
-        frida/gumpp/returnaddress.cpp
+        Frida/gumpp/runtime.cpp
+        Frida/gumpp/backtracer.cpp
+        Frida/gumpp/interceptor.cpp
+        Frida/gumpp/invocationlistener.cpp
+        Frida/gumpp/returnaddress.cpp
     )
     add_library(MyLibName SHARED ${LOCAL_SRC_FILES})
     target_link_libraries(MyLibName
@@ -83,7 +85,7 @@ if(USE_FRIDA)
         EGL
         GLESv2
         dobby_static
-        ${CMAKE_SOURCE_DIR}/frida/libfrida-gum.a
+        ${CMAKE_SOURCE_DIR}/Frida/${CMAKE_ANDROID_ARCH_ABI}/libfrida-gum.a
     )
 else()
     add_library(MyLibName SHARED ${LOCAL_SRC_FILES})
