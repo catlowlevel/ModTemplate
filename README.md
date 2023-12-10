@@ -11,9 +11,13 @@ Build the ModMenu
 cd ProjectName/TemplateModMenu
 gradle assembleDebug
 ```
-add the mod menu to the game apk
+Add the mod menu to the game apk
 ```console
 cd ../
 <copy game apk to current dir>
 ./build.py game.apk
 ```
+
+## Credits
+- [Zygisk-Il2CppDumper](https://github.com/Perfare/Zygisk-Il2CppDumper)
+- [frida-il2cpp-bridge](https://github.com/vfsfitvnm/frida-il2cpp-bridge)

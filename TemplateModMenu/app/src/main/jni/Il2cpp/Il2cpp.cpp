@@ -376,11 +376,6 @@ std::string dump_type(Il2CppType *type)
     {
         outPut << "class ";
     }
-    auto namespaze = il2cpp_class_get_namespace(klass);
-    if (namespaze && strlen(namespaze) > 0)
-    {
-        outPut << namespaze << ".";
-    }
     auto type_name = il2cpp_type_get_name(type);
     if (type_name && strlen(type_name) > 0)
     {
@@ -388,6 +383,11 @@ std::string dump_type(Il2CppType *type)
     }
     else
     {
+        auto namespaze = il2cpp_class_get_namespace(klass);
+        if (namespaze && strlen(namespaze) > 0)
+        {
+            outPut << namespaze << ".";
+        }
         outPut << il2cpp_class_get_name(klass); // TODO genericContainerIndex
     }
     std::vector<std::string> extends;
