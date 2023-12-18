@@ -77,7 +77,7 @@ target_link_libraries(MyLibName
         dobby_static
         )
 
-if(WIN32)
+if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
   # Windows platform detected, perform a copy operation
   file(COPY "${CMAKE_BINARY_DIR}/compile_commands.json" DESTINATION "${CMAKE_SOURCE_DIR}")
 else()
