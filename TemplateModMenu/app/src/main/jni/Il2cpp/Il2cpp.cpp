@@ -821,7 +821,7 @@ namespace Il2cpp
         il2cpp_field_static_set_value(field, outValue);
     }
 
-    Il2CppObject *GetFieldValueObect(Il2CppObject *object, FieldInfo *field)
+    Il2CppObject *GetFieldValueObject(Il2CppObject *object, FieldInfo *field)
     {
         return il2cpp_field_get_value_object(field, object);
     }
@@ -947,6 +947,21 @@ namespace Il2cpp
         return il2cpp_class_from_system_type(type);
     }
 
+    Il2CppType *GetBaseType(Il2CppClass *klass)
+    {
+        return il2cpp_class_enum_basetype(klass);
+    }
+
+    bool GetClassIsValueType(Il2CppClass *klass)
+    {
+        return il2cpp_class_is_valuetype(klass);
+    }
+
+    bool GetClassIsEnum(Il2CppClass *klass)
+    {
+        return il2cpp_class_is_enum(klass);
+    }
+
     Il2CppType *GetMethodReturnType(MethodInfo *method)
     {
         return il2cpp_method_get_return_type(method);
@@ -1019,6 +1034,11 @@ namespace Il2cpp
         return il2cpp_type_is_pointer_type(type);
     }
 
+    bool GetTypeIsStatic(Il2CppType *type)
+    {
+        return il2cpp_type_is_static(type);
+    }
+
     Il2CppType *GetFieldType(FieldInfo *field)
     {
         return il2cpp_field_get_type(field);
@@ -1027,6 +1047,11 @@ namespace Il2cpp
     const char *GetFieldName(FieldInfo *field)
     {
         return il2cpp_field_get_name(field);
+    }
+
+    int GetFieldFlags(FieldInfo *field)
+    {
+        return il2cpp_field_get_flags(field);
     }
 
     const char *GetTypeName(Il2CppType *type)
@@ -1132,7 +1157,7 @@ namespace Il2cpp
                 }
 
                 auto indent = repeatString("│ ", depth++);
-                LOGD("%p %s%s%s::%s", il2cpp_base - (uintptr_t)data->m->methodPointer, indent.c_str(), "┌─",
+                LOGD("%p %s%s%s::%s", (uintptr_t)data->m->methodPointer - il2cpp_base, indent.c_str(), "┌─",
                      m->getClass()->getFullName().c_str(), m->getName());
             }
         }
@@ -1143,7 +1168,7 @@ namespace Il2cpp
             if (data->skip)
                 return;
             auto indent = repeatString("│ ", --depth);
-            LOGD("%p %s%s%s::%s", il2cpp_base - (uintptr_t)data->m->methodPointer, indent.c_str(), "└─",
+            LOGD("%p %s%s%s::%s", (uintptr_t)data->m->methodPointer - il2cpp_base, indent.c_str(), "└─",
                  data->m->getClass()->getFullName().c_str(), data->m->getName());
             // TODO: Improve this
             //  auto returnType = data->m->getReturnType()->getName();

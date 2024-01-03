@@ -42,6 +42,9 @@ namespace Il2cpp
     bool GetClassIsGeneric(Il2CppClass *klass);
     Il2CppClass *FindClass(const char *klassName);
     Il2CppClass *GetClassFromSystemType(Il2CppReflectionType *type);
+    Il2CppType *GetBaseType(Il2CppClass *klass);
+    bool GetClassIsValueType(Il2CppClass *klass);
+    bool GetClassIsEnum(Il2CppClass *klass);
 
     // object
     uint32_t GetObjectSize(Il2CppObject *object);
@@ -69,15 +72,17 @@ namespace Il2cpp
     void GetFieldStaticValue(FieldInfo *field, void *outValue);
     void SetFieldValue(Il2CppObject *object, FieldInfo *field, void *newValue);
     void SetFieldStaticValue(FieldInfo *field, void *outValue);
-    //    Il2CppObject *GetFieldValueObect(Il2CppObject *object, FieldInfo *field);
+    Il2CppObject *GetFieldValueObject(Il2CppObject *object, FieldInfo *field);
     uintptr_t GetFieldOffset(FieldInfo *field);
     Il2CppType *GetFieldType(FieldInfo *field);
     const char *GetFieldName(FieldInfo *field);
+    int GetFieldFlags(FieldInfo *field);
 
     // type
     Il2CppClass *GetClassFromType(Il2CppType *type);
     Il2CppClass *GetTypeClass(Il2CppType *type);
     bool GetTypeIsPointer(Il2CppType *type);
+    bool GetTypeIsStatic(Il2CppType *type);
     const char *GetTypeName(Il2CppType *type);
     Il2CppObject *GetTypeObject(Il2CppType *type);
 
