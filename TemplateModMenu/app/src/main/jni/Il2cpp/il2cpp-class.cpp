@@ -12,6 +12,281 @@
 #include "Il2cpp/il2cpp-tabledefs.h"
 #include "sstream"
 
+std::string toHex(uintptr_t my_integer)
+{
+
+    std::stringstream sstream;
+    sstream << "0x" << std::uppercase << std::hex << my_integer;
+    return sstream.str();
+}
+
+std::string extractClassNameFromTypename(const char *typeName)
+{
+    std::string nameStr{typeName};
+    size_t dotIndex = nameStr.find_last_of('.');
+    size_t ltIndex = nameStr.find_first_of("<");
+    std::string classNamespace;
+
+    if (dotIndex == std::string::npos)
+    {
+        classNamespace = "";
+    }
+    else
+    {
+        if (ltIndex == std::string::npos)
+        {
+            classNamespace = nameStr.substr(0, dotIndex);
+        }
+        else
+        {
+            if (dotIndex > ltIndex)
+            {
+                dotIndex = nameStr.find_last_of('.', ltIndex);
+                classNamespace = nameStr.substr(0, dotIndex);
+            }
+        }
+    }
+    return nameStr.substr(dotIndex + 1);
+}
+
+bool isVisited(std::vector<uintptr_t> &visited, Il2CppObject *object)
+{
+    return visited.size() > 0 && std::find(visited.begin(), visited.end(), (uintptr_t)object) != visited.end();
+}
+
+std::vector<std::function<nlohmann::ordered_json(Il2CppObject *, Il2CppType *, size_t)>> callbacks;
+void AddCustomDumpHandler(std::function<nlohmann::ordered_json(Il2CppObject *, Il2CppType *, size_t)> handler)
+{
+    callbacks.push_back(handler);
+}
+
+nlohmann::ordered_json Handler(Il2CppObject *object, Il2CppType *type, size_t maxDepth)
+{
+    for (auto callback : callbacks)
+    {
+        auto res = callback(object, type, maxDepth);
+        if (!res.empty())
+        {
+            return res;
+        }
+    }
+    return nlohmann::ordered_json{};
+}
+
+// object may be null
+nlohmann::ordered_json DumpObject(Il2CppObject *object, Il2CppType *type, std::vector<uintptr_t> &visited,
+                                  size_t maxDepth)
+{
+// LOGD(("DumpObject %llX %s"), object, type->getName());
+#define MAX_LISTARRAY 5
+
+    if (type->isPointer())
+    {
+        return "(unhandled-pointer)";
+    }
+
+    auto custom = Handler(object, type, maxDepth);
+    if (!custom.empty())
+    {
+        return custom;
+    }
+
+    // THE ORDER OF THIS IS IMPORTANT!
+    if (std::string(type->getName()) == "System.String")
+    {
+        auto strObj = (Il2CppString *)object;
+        if (strObj)
+        {
+            return strObj->to_string();
+        }
+        else
+        {
+            return "(null-string)";
+        }
+    }
+    else if (type->isPrimitive())
+    {
+        auto str = object->invoke_method<Il2CppString *>("ToString")->to_string();
+        return str;
+    }
+    else if (type->isEnum())
+    {
+        if (object)
+        {
+            auto str = object->invoke_method<Il2CppString *>("ToString")->to_string();
+            return str;
+        }
+        else
+        {
+            return "(null-enum)";
+        }
+    }
+    else if (type->isValueType())
+    {
+        if (object)
+        {
+            return object->dump(visited, maxDepth - 1);
+        }
+        else
+        {
+            return "(null-value-type)";
+        }
+    }
+    else if (type->isObject() && !(type->isList() || type->isArray()))
+    {
+        if (object)
+        {
+            // addVisited(visited, object);
+            return object->dump(visited, maxDepth - 1);
+        }
+        else
+        {
+            return "(null-object)";
+        }
+    }
+    else if (type->isArray())
+    {
+        if (object)
+        {
+            // addVisited(visited, object);
+            auto arr = (Il2CppArray<ValueType<uintptr_t>> *)object;
+            nlohmann::ordered_json array = nlohmann::ordered_json::array();
+            auto arrLen = arr->length();
+            for (int i = 0; i < std::min(arrLen, uint32_t(MAX_LISTARRAY)); i++)
+            {
+                auto current = arr->invoke_method<Il2CppObject *>("System.Collections.IList.get_Item", i);
+                if (current)
+                {
+                    auto currentType = Il2cpp::GetClassType(current->klass);
+                    if (currentType->isPrimitive() || currentType->isEnum())
+                    {
+                        array.push_back(DumpObject(current, currentType, visited, maxDepth - 1));
+                    }
+                    else
+                    {
+
+                        // FIXME: "System.Int32[]": "(no-fields)"
+                        array.push_back(current->dump(visited, maxDepth - 1));
+                    }
+                }
+                else
+                {
+                    array.push_back("(null-array-item)");
+                }
+            }
+
+            if (arrLen > MAX_LISTARRAY)
+            {
+                array.push_back(std::to_string(arrLen - MAX_LISTARRAY) + " more...");
+            }
+            return array;
+        }
+        else
+        {
+            return "(null-array)";
+        }
+    }
+    else if (type->isList())
+    {
+        auto list = (List<uintptr_t> *)object;
+        if (list)
+        {
+            // addVisited(visited, object);
+            nlohmann::ordered_json arr = nlohmann::ordered_json::array();
+            auto listLen = list->size();
+            for (int i = 0; i < std::min(listLen, MAX_LISTARRAY); i++)
+            {
+                auto current = list->invoke_method<Il2CppObject *>("System.Collections.IList.get_Item", i);
+                if (current)
+                {
+                    auto currentType = Il2cpp::GetClassType(current->klass);
+                    if (currentType->isPrimitive() || currentType->isEnum())
+                    {
+                        arr.push_back(DumpObject(current, currentType, visited, maxDepth - 1));
+                    }
+                    else
+                    {
+                        arr.push_back({{currentType->getName(), current->dump(visited, maxDepth - 1)}});
+                    }
+                    // arr.push_back(DumpObject(current, currentType, maxDepth - 1));
+                }
+                else
+                {
+                    arr.push_back("(null-list-item)");
+                }
+            }
+            if (listLen > MAX_LISTARRAY)
+            {
+                arr.push_back(std::to_string(listLen - MAX_LISTARRAY) + " more...");
+            }
+            return arr;
+        }
+        else
+        {
+            return "(null-list)";
+        }
+    }
+    // return "(unhandled) (" + std ::string(to_hex(type->type)) + ")";
+    // return "(unhandled) (" + std ::string(type->getName()) + ")";
+    return "(unhandled)";
+}
+
+nlohmann::ordered_json Il2CppObject::dump(std::vector<uintptr_t> &visited, int maxDepth)
+{
+    if (isVisited(visited, this))
+    {
+        return "(circular-reference (" + toHex((uintptr_t)this) + "))";
+    }
+    else
+    {
+        visited.push_back((uintptr_t)this);
+    }
+
+    if (maxDepth == 0)
+        return "(" + toHex((uintptr_t)this) + ")";
+
+    auto thisType = Il2cpp::GetClassType(this->klass);
+
+    // if (thisType->isPrimitive())
+    // {
+    //     auto str = this->invoke_method<Il2CppString *>("ToString")->to_string();
+    //     return str;
+    // }
+    // else if (thisType->isValueType())
+    // {
+    //     // auto str = this->invoke_method<Il2CppString *>("ToString")->to_string();
+    //     // return str;
+    //     return "(value-type)";
+    // }
+    // else if (std::string(thisType->getName()) == "System.String")
+    // {
+    //     auto str = ((Il2CppString *)this)->to_string();
+    //     return str;
+    // }
+
+    auto fields = this->klass->getFields();
+    if (fields.size() == 0)
+        return "(no-fields)";
+
+    nlohmann::ordered_json j;
+    for (auto field : fields)
+    {
+
+        auto fieldType = field->getType();
+        auto fieldName = field->getName();
+
+        if (Il2cpp::GetTypeIsStatic(fieldType) || Il2cpp::GetFieldFlags(field) & FIELD_ATTRIBUTE_STATIC)
+        {
+            continue;
+        }
+
+        auto jsonKey = extractClassNameFromTypename(fieldType->getName()) + " " + fieldName;
+        auto fieldObject = Il2cpp::GetFieldValueObject(this, field);
+        j[jsonKey] = DumpObject(fieldObject, fieldType, visited, maxDepth);
+    }
+    return j;
+}
+
 const char *Il2CppClass::getName()
 {
     return Il2cpp::GetClassName(this);
