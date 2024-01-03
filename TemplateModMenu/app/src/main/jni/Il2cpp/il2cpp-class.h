@@ -151,6 +151,18 @@ struct Il2CppType
 
     bool isPointer();
 
+    bool isPrimitive();
+
+    bool isObject();
+
+    bool isList();
+
+    bool isArray();
+
+    bool isValueType();
+
+    bool isEnum();
+
     const char *getName();
 
     Il2CppClass *getClass();
