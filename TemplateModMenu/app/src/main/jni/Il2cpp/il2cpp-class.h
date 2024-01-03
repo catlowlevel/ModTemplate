@@ -5,6 +5,7 @@
 // #include "And64InlineHook/And64InlineHook.hpp"
 #include "Dobby/include/dobby.h"
 #include "Includes/Logger.h"
+#include "nlohmann/json.hpp"
 
 typedef uint16_t Il2CppChar;
 typedef uintptr_t il2cpp_array_size_t;
@@ -241,9 +242,14 @@ struct Il2CppObject
     template <typename T>
     void setField(const char *name, T newValue);
 
+    // returns all fields values as json
+    nlohmann::ordered_json dump(std::vector<uintptr_t> &visited, int maxDepth = 1);
+
   private:
     uintptr_t _getFieldOffset(const char *name);
 };
+
+void AddCustomDumpHandler(std::function<nlohmann::ordered_json(Il2CppObject *, Il2CppType *, size_t)> handler);
 
 struct _Il2CppArray : Il2CppObject
 {
