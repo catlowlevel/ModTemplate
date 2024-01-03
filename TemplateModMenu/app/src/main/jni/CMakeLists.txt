@@ -68,6 +68,9 @@ add_subdirectory(Dobby)
 # Add the shared library
 add_library(MyLibName SHARED ${LOCAL_SRC_FILES})
 
+set(JSON_BuildTests OFF CACHE INTERNAL "")
+add_subdirectory(json)
+
 # Link required libraries
 target_link_libraries(MyLibName
         log
@@ -75,6 +78,7 @@ target_link_libraries(MyLibName
         EGL
         GLESv2
         dobby_static
+        nlohmann_json::nlohmann_json
         )
 
 if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
