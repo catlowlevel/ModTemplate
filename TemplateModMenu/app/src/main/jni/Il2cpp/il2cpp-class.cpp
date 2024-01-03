@@ -2,12 +2,15 @@
 // Created by misman on 02/09/23.
 //
 
+#include <algorithm>
 #include <string>
 #include <locale>
 #include <codecvt>
 #include <unordered_map>
 #include "il2cpp-class.h"
 #include "Il2cpp.h"
+#include "Il2cpp/il2cpp-tabledefs.h"
+#include "sstream"
 
 const char *Il2CppClass::getName()
 {
@@ -293,6 +296,59 @@ const char *FieldInfo::getName()
 bool Il2CppType::isPointer()
 {
     return Il2cpp::GetTypeIsPointer(this);
+}
+
+bool Il2CppType::isPrimitive()
+{
+    static std::vector<const char *> CSPrimitive = {
+        "System.Boolean", "System.Char",   "System.SByte", "System.Byte",   "System.Int16",  "System.UInt16",
+        "System.Int32",   "System.UInt32", "System.Int64", "System.UInt64", "System.Single", "System.Double"};
+    return std::find_if(CSPrimitive.begin(), CSPrimitive.end(),
+                        [this](const char *primitiveName)
+                        { return strcmp(this->getName(), primitiveName) == 0; }) != CSPrimitive.end();
+}
+
+bool Il2CppType::isValueType()
+{
+    return Il2cpp::GetClassIsValueType(this->getClass());
+}
+
+bool Il2CppType::isEnum()
+{
+    return Il2cpp::GetClassIsEnum(this->getClass());
+}
+
+bool Il2CppType::isList()
+{
+    return std::string(this->getName()).starts_with("System.Collections.Generic.List");
+}
+
+bool Il2CppType::isArray()
+{
+    switch (this->type)
+    {
+        case IL2CPP_TYPE_SZARRAY:
+        case IL2CPP_TYPE_ARRAY:
+            return true;
+        default:
+            return false;
+    }
+}
+
+bool Il2CppType::isObject()
+{
+    switch (this->type)
+    {
+        case IL2CPP_TYPE_STRING:
+        case IL2CPP_TYPE_SZARRAY:
+        case IL2CPP_TYPE_CLASS:
+        case IL2CPP_TYPE_OBJECT:
+        case IL2CPP_TYPE_ARRAY:
+        case IL2CPP_TYPE_GENERICINST:
+            return true;
+        default:
+            return false;
+    }
 }
 
 const char *Il2CppType::getName()
