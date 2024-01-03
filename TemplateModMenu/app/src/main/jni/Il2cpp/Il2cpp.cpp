@@ -394,15 +394,32 @@ std::string dump_type(Il2CppType *type)
     if (!is_valuetype && !is_enum && parent)
     {
         auto parent_type = il2cpp_class_get_type(parent);
-        if (parent_type->type != IL2CPP_TYPE_OBJECT)
+        // if (parent_type->type != IL2CPP_TYPE_OBJECT)
+        // {
+        auto name = il2cpp_type_get_name(parent_type);
+        if (name && strlen(name) > 0)
+        {
+            extends.emplace_back(name);
+        }
+        else
         {
             extends.emplace_back(il2cpp_class_get_name(parent));
         }
+        // }
     }
     void *iter = nullptr;
     while (auto itf = il2cpp_class_get_interfaces(klass, &iter))
     {
-        extends.emplace_back(il2cpp_class_get_name(itf));
+        auto type = il2cpp_class_get_type(itf);
+        auto name = il2cpp_type_get_name(type);
+        if (name && strlen(name) > 0)
+        {
+            extends.emplace_back(name);
+        }
+        else
+        {
+            extends.emplace_back(il2cpp_class_get_name(itf));
+        }
     }
     outPut << " : ";
     if (!extends.empty())
