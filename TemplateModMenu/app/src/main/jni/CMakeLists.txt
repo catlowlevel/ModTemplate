@@ -68,6 +68,10 @@ include_directories(${SRC_DIR})
 
 add_subdirectory(Dobby)
 
+set(JSON_BuildTests OFF CACHE INTERNAL "")
+
+add_subdirectory(json)
+
 if(USE_FRIDA)
     include_directories(${CMAKE_SOURCE_DIR}/Frida/${CMAKE_ANDROID_ARCH_ABI})
     include_directories(${CMAKE_SOURCE_DIR}/Frida/gumpp)
@@ -85,6 +89,7 @@ if(USE_FRIDA)
         EGL
         GLESv2
         dobby_static
+        nlohmann_json::nlohmann_json
         ${CMAKE_SOURCE_DIR}/Frida/${CMAKE_ANDROID_ARCH_ABI}/libfrida-gum.a
     )
 else()
@@ -95,10 +100,11 @@ else()
         EGL
         GLESv2
         dobby_static
+        nlohmann_json::nlohmann_json
     )
 endif()
 
-if(WIN32)
+if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
   # Windows platform detected, perform a copy operation
   file(COPY "${CMAKE_BINARY_DIR}/compile_commands.json" DESTINATION "${CMAKE_SOURCE_DIR}")
 else()

@@ -15,8 +15,6 @@
 #include <fstream>
 #include <unistd.h>
 #include <unordered_map>
-#include <thread>
-#include "dobby.h"
 #include "gumpp.hpp"
 #include "il2cpp-tabledefs.h"
 #include "il2cpp-class.h"
@@ -395,15 +393,32 @@ std::string dump_type(Il2CppType *type)
     if (!is_valuetype && !is_enum && parent)
     {
         auto parent_type = il2cpp_class_get_type(parent);
-        if (parent_type->type != IL2CPP_TYPE_OBJECT)
+        // if (parent_type->type != IL2CPP_TYPE_OBJECT)
+        // {
+        auto name = il2cpp_type_get_name(parent_type);
+        if (name && strlen(name) > 0)
+        {
+            extends.emplace_back(name);
+        }
+        else
         {
             extends.emplace_back(il2cpp_class_get_name(parent));
         }
+        // }
     }
     void *iter = nullptr;
     while (auto itf = il2cpp_class_get_interfaces(klass, &iter))
     {
-        extends.emplace_back(il2cpp_class_get_name(itf));
+        auto type = il2cpp_class_get_type(itf);
+        auto name = il2cpp_type_get_name(type);
+        if (name && strlen(name) > 0)
+        {
+            extends.emplace_back(name);
+        }
+        else
+        {
+            extends.emplace_back(il2cpp_class_get_name(itf));
+        }
     }
     outPut << " : ";
     if (!extends.empty())
@@ -806,7 +821,7 @@ namespace Il2cpp
         il2cpp_field_static_set_value(field, outValue);
     }
 
-    Il2CppObject *GetFieldValueObect(Il2CppObject *object, FieldInfo *field)
+    Il2CppObject *GetFieldValueObject(Il2CppObject *object, FieldInfo *field)
     {
         return il2cpp_field_get_value_object(field, object);
     }
@@ -932,6 +947,21 @@ namespace Il2cpp
         return il2cpp_class_from_system_type(type);
     }
 
+    Il2CppType *GetBaseType(Il2CppClass *klass)
+    {
+        return il2cpp_class_enum_basetype(klass);
+    }
+
+    bool GetClassIsValueType(Il2CppClass *klass)
+    {
+        return il2cpp_class_is_valuetype(klass);
+    }
+
+    bool GetClassIsEnum(Il2CppClass *klass)
+    {
+        return il2cpp_class_is_enum(klass);
+    }
+
     Il2CppType *GetMethodReturnType(MethodInfo *method)
     {
         return il2cpp_method_get_return_type(method);
@@ -1004,6 +1034,11 @@ namespace Il2cpp
         return il2cpp_type_is_pointer_type(type);
     }
 
+    bool GetTypeIsStatic(Il2CppType *type)
+    {
+        return il2cpp_type_is_static(type);
+    }
+
     Il2CppType *GetFieldType(FieldInfo *field)
     {
         return il2cpp_field_get_type(field);
@@ -1012,6 +1047,11 @@ namespace Il2cpp
     const char *GetFieldName(FieldInfo *field)
     {
         return il2cpp_field_get_name(field);
+    }
+
+    int GetFieldFlags(FieldInfo *field)
+    {
+        return il2cpp_field_get_flags(field);
     }
 
     const char *GetTypeName(Il2CppType *type)
@@ -1117,7 +1157,8 @@ namespace Il2cpp
                 }
 
                 auto indent = repeatString("│ ", depth++);
-                LOGD("%s%s%s::%s", indent.c_str(), "┌─", m->getClass()->getFullName().c_str(), m->getName());
+                LOGD("%p %s%s%s::%s", (uintptr_t)data->m->methodPointer - il2cpp_base, indent.c_str(), "┌─",
+                     m->getClass()->getFullName().c_str(), m->getName());
             }
         }
 
@@ -1127,7 +1168,8 @@ namespace Il2cpp
             if (data->skip)
                 return;
             auto indent = repeatString("│ ", --depth);
-            LOGD("%s%s%s::%s", indent.c_str(), "└─", data->m->getClass()->getFullName().c_str(), data->m->getName());
+            LOGD("%p %s%s%s::%s", (uintptr_t)data->m->methodPointer - il2cpp_base, indent.c_str(), "└─",
+                 data->m->getClass()->getFullName().c_str(), data->m->getName());
             // TODO: Improve this
             //  auto returnType = data->m->getReturnType()->getName();
             //  if (strcmp(returnType, "System.Int32") == 0)

@@ -42,7 +42,7 @@ def get_activity_path(target_path: str, activity_name: str):
     for root, _, files in os.walk(target_path):
         for file in files:
             # Check if the file name matches the last part of the main activity name
-            expected_path = "/".join(activity_name.split(".")) + ".smali"
+            expected_path = os.path.join(*activity_name.split(".")) + ".smali"
             result = os.path.join(root, file)
 
             if result.endswith(expected_path):
@@ -123,7 +123,7 @@ def recompile(apk: str):
     if code != 0:
         print(f"apktool b {filename} failed")
         exit(1)
-    return f"{filename}/dist/{filename}.apk"
+    return os.path.join(filename, "dist", f"{filename}.apk")
 
 
 def main(argv: list[str]):
@@ -167,8 +167,12 @@ def main(argv: list[str]):
         print("ModMenu dir not found")
         exit(1)
 
-    menu_apk = f"{mod_menu_dir}/app/build/intermediates/apk/{mode}/app-{mode}.apk"
-    menu_apk2 = f"{mod_menu_dir}/app/build/outputs/apk/{mode}/app-{mode}.apk"
+    menu_apk = os.path.join(
+        mod_menu_dir, "app", "build", "intermediates", "apk", mode, f"app-{mode}.apk"
+    )
+    menu_apk2 = os.path.join(
+        mod_menu_dir, "app", "build", "outputs", "apk", mode, f"app-{mode}.apk"
+    )
 
     # check if menu_apk exists
     if not os.path.exists(menu_apk):
@@ -189,7 +193,7 @@ def main(argv: list[str]):
     target_dir = decompile_apk(apk)
     print(f"Decompiled to {target_dir}")
 
-    manifest_file = f"{target_dir}/AndroidManifest.xml"
+    manifest_file = os.path.join(target_dir, "AndroidManifest.xml")
 
     print(f"Looking for main activity in {manifest_file}")
     main_activity = get_main_activity_name(manifest_file)
@@ -220,23 +224,22 @@ def main(argv: list[str]):
     print("Done")
 
     # copy
-    # src = f"{menu_dir}/smali/com" #copies the content of com, excluding the com
-    src = f"{menu_dir}/smali"
-    dst = f"{target_dir}/{last_smali}"
+    src = os.path.join(menu_dir, "smali")
+    dst = os.path.join(target_dir, last_smali)
     print(f"Copying {src} to {dst}")
     shutil.copytree(src, dst, dirs_exist_ok=True)
-    src = f"{menu_dir}/lib/{selected_arch}/libMyLibName.so"
-    dst = f"{target_dir}/lib/{selected_arch}/"
+    src = os.path.join(menu_dir, "lib", selected_arch, "libMyLibName.so")
+    dst = os.path.join(target_dir, "lib", selected_arch)
     print(f"Copying {src} to {dst}")
     shutil.copy(src, dst)
 
     # delete other arch inside lib beside selected_arch
-    other_arch = os.listdir(f"{target_dir}/lib")
+    other_arch = os.listdir(os.path.join(target_dir, "lib"))
     other_arch = [arch for arch in other_arch if arch != selected_arch]
 
     for arch in other_arch:
-        print(f"Deleting {target_dir}/lib/{arch}")
-        shutil.rmtree(f"{target_dir}/lib/{arch}")
+        print(f"Deleting {os.path.join(target_dir, 'lib', arch)}")
+        shutil.rmtree(os.path.join(target_dir, "lib", arch))
 
     result = recompile(apk)
     shutil.copy(result, f"{target_dir}_menued-{mode}.apk")
