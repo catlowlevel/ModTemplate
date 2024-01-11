@@ -49,6 +49,7 @@ set(LOCAL_SRC_FILES
         Main.cpp
         Menu/Menu.cpp
         Menu/Setup.cpp
+        Menu/ImGui.cpp
         Includes/Utils.cpp
         KittyMemory/KittyMemory.cpp
         KittyMemory/MemoryPatch.cpp
@@ -61,6 +62,13 @@ set(LOCAL_SRC_FILES
         Il2cpp/xdl/xdl_linker.c
         Il2cpp/xdl/xdl_lzma.c
         Il2cpp/xdl/xdl_util.c
+        imgui/backends/imgui_impl_opengl3.cpp
+        imgui/backends/imgui_impl_android.cpp
+        imgui/imgui.cpp
+        imgui/imgui_draw.cpp
+        imgui/imgui_demo.cpp
+        imgui/imgui_tables.cpp
+        imgui/imgui_widgets.cpp
 )
 
 # Add include directories
@@ -88,6 +96,7 @@ if(USE_FRIDA)
         android
         EGL
         GLESv2
+        GLESv3
         dobby_static
         nlohmann_json::nlohmann_json
         ${CMAKE_SOURCE_DIR}/Frida/${CMAKE_ANDROID_ARCH_ABI}/libfrida-gum.a
@@ -99,6 +108,7 @@ else()
         android
         EGL
         GLESv2
+        GLESv3
         dobby_static
         nlohmann_json::nlohmann_json
     )

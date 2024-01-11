@@ -9,6 +9,8 @@
 #include "Menu/Menu.h"           // for Icon, IconWebViewData, SettingsList
 #include "Menu/Setup.h"          // for CheckOverlayPermission, Init
 #include "Includes/Macros.h"
+#include "Menu/ImGui.h"
+#include "imgui/imgui.h"
 
 // Target lib here
 #define targetLibName OBFUSCATE("libil2cpp.so")
@@ -64,11 +66,22 @@ void SubClass_SampleMethod(Il2CppObject *instance)
     return instance->invoke_method<void>("SampleMethod");
 }
 
+void draw_thread()
+{
+    ImGui::Begin("TemplateModMenu");
+    if (ImGui::Button("Button"))
+    {
+        LOGD("Button pressed");
+    }
+    ImGui::End();
+}
+
 // we will run our hacks in a new thread so our while loop doesn't block process main thread
 void *hack_thread(void *)
 {
     LOGI(OBFUSCATE("pthread created"));
 
+    initModMenu((void *)draw_thread);
     // Check if target lib is loaded
     do
     {
