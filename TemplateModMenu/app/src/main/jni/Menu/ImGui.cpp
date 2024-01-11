@@ -43,6 +43,7 @@ HOOKINPUT(void, Input, void *thiz, void *ex_ab, void *ex_ac)
     return;
 }
 
+ImVec2 initialScreenSize;
 // This menu_addr is used to allow for multiple game support in the future
 void *initModMenu(void *menu_addr)
 {
@@ -86,7 +87,7 @@ void setupMenu()
 
     ImGuiIO &io = ImGui::GetIO();
     io.DisplaySize = ImVec2((float)glWidth, (float)glHeight);
-    io.ConfigWindowsMoveFromTitleBarOnly = true;
+    // io.ConfigWindowsMoveFromTitleBarOnly = true;
     io.IniFilename = nullptr;
 
     // Setup Platform/Renderer backends
@@ -128,7 +129,13 @@ EGLBoolean swapbuffers_hook(EGLDisplay dpy, EGLSurface surf)
     eglQuerySurface(dpy, surf, EGL_HEIGHT, &h);
     glWidth = w;
     glHeight = h;
-
+    static bool initialScreenSet = false;
+    if (!initialScreenSet)
+    {
+        initialScreenSize.x = w;
+        initialScreenSize.y = h;
+        initialScreenSet = true;
+    }
     setupMenu();
     internalDrawMenu(w, h);
 
