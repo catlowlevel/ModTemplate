@@ -39,7 +39,8 @@ int getGlHeight()
 HOOKINPUT(void, Input, void *thiz, void *ex_ab, void *ex_ac)
 {
     origInput(thiz, ex_ab, ex_ac);
-    ImGui_ImplAndroid_HandleInputEvent((AInputEvent *)thiz);
+    if (isInitialized)
+        ImGui_ImplAndroid_HandleInputEvent((AInputEvent *)thiz);
     return;
 }
 
