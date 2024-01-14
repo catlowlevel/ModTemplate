@@ -17,6 +17,7 @@ EGLBoolean swapbuffers_hook(EGLDisplay dpy, EGLSurface surf);
 swapbuffers_orig o_swapbuffers = nullptr;
 
 void (*menuAddress)();
+void (*onInitAddr)();
 
 bool isInitialized = false;
 int glWidth = 0;
@@ -102,6 +103,8 @@ void setupMenu()
     io.Fonts->AddFontFromMemoryTTF(Roboto_Regular, systemScale * 30.0, 40.0f);
 
     ImGui::GetStyle().ScaleAllSizes(2);
+    ImGuiStyle &style = ImGui::GetStyle();
+    style.ScrollbarSize *= 2.5f;
 
     isInitialized = true;
     LOGI("setup done.");
@@ -120,6 +123,7 @@ void internalDrawMenu(int width, int height)
     ImGui_ImplAndroid_NewFrame(width, height);
     ImGui::NewFrame();
 
+    ImGui::SetNextWindowSize(ImVec2((float)width / 2, (float)height / 2), ImGuiCond_Once);
     menuAddress();
 
     ImGui::Render();
