@@ -46,9 +46,10 @@ HOOKINPUT(void, Input, void *thiz, void *ex_ab, void *ex_ac)
 
 ImVec2 initialScreenSize;
 // This menu_addr is used to allow for multiple game support in the future
-void *initModMenu(void *menu_addr)
+void *initModMenu(void *menu_addr, void *on_init_addr)
 {
     menuAddress = (void (*)())menu_addr;
+    onInitAddr = (void (*)())on_init_addr;
     // do
     // {
     //     sleep(1);
@@ -104,6 +105,9 @@ void setupMenu()
 
     isInitialized = true;
     LOGI("setup done.");
+
+    if (onInitAddr)
+        onInitAddr();
 }
 void internalDrawMenu(int width, int height)
 {
