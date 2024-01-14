@@ -17,55 +17,6 @@
 
 Il2CppImage *g_Image = nullptr;
 
-// exmaple dump.cs
-// class Game.Sample.Class //Assembly-CSharp
-// {
-//     System.Int32 Id; // 0x10
-//     System.Int32 BuffType; // 0x14
-//     UnityEngine.Vector3 Vel; // 0x18
-//     UnityEngine.Vector3 Pos // 0x24
-//     System.Single Interval; // 0x30
-//     System.Single Counter; // 0x34
-//     System.Int32 GoIndex; // 0x38
-//     System.String Param; // 0x40
-//     System.Int32 get_Id();
-//     System.Void set_Position(UnityEngine.Vector3 pos);
-//     System.Void .ctor(); // 0x017ad8d4
-// }
-//
-// class Game.Sample.Class.SubClass
-// {
-//     System.Void SampleMethod();
-//     System.Void .ctor();
-// }
-
-struct UnityEngine_Vector3
-{
-    float x, y, z;
-};
-
-void Class_set_Position(Il2CppObject *instance, UnityEngine_Vector3 pos)
-{
-    LOGD("set_Position: %f, %f, %f", pos.x, pos.y, pos.z);
-    pos.x += 1;
-    return instance->invoke_method<void>("set_Position", pos);
-}
-
-void (*o_Class_ctor)(Il2CppObject *);
-void Class_ctor(Il2CppObject *instance)
-{
-    o_Class_ctor(instance);
-    auto id = instance->getField<int32_t>("Id");
-    LOGINT(id);
-    instance->setField("BuffType", 2);
-}
-
-void SubClass_SampleMethod(Il2CppObject *instance)
-{
-    LOGD("SampleMethod");
-    return instance->invoke_method<void>("SampleMethod");
-}
-
 void draw_thread()
 {
     ImGui::Begin("TemplateModMenu");
@@ -73,41 +24,59 @@ void draw_thread()
     {
         LOGD("Button pressed");
     }
+
+#ifdef __DEBUG__
+    ImGui::Separator();
+    logger::Draw("LOG");
+#endif
+
     ImGui::End();
+}
+
+// this function hook will prevent touch pass through the ImGui window
+int (*o_get_touchCount)();
+int get_touchCount();
+
+void on_init()
+{
+    while (!isLibraryLoaded(targetLibName))
+    {
+        sleep(1);
+    }
+
+    LOGI("%s has been loaded", (const char *)targetLibName);
+
+    Il2cpp::Init();
+    Il2cpp::EnsureAttached();
+
+    LOGD("HOOKING...");
+
+    g_Image = Il2cpp::GetImage("UnityEngine.InputLegacyModule"); // hack
+    REPLACE_NAME_ORIG("UnityEngine.Input", "get_touchCount", get_touchCount,
+                      o_get_touchCount); // TODO: pass image to REPLACE macro
+
+    g_Image = Il2cpp::GetAssembly("Assembly-CSharp")->getImage();
+
+    LOGD("HOOKED!");
 }
 
 // we will run our hacks in a new thread so our while loop doesn't block process main thread
 void *hack_thread(void *)
 {
-    LOGI(OBFUSCATE("pthread created"));
+    logger::Clear();
 
-    initModMenu((void *)draw_thread);
-    // Check if target lib is loaded
-    do
-    {
-        sleep(1);
-    } while (!isLibraryLoaded(targetLibName));
+    LOGI("pthread created");
 
-    LOGI(OBFUSCATE("%s has been loaded"), (const char *)targetLibName);
-
-    Il2cpp::Init();
-    Il2cpp::EnsureAttached();
-
-    LOGD(OBFUSCATE("HOOKING..."));
-    // g_Image = Il2cpp::GetAssembly("Assembly-CSharp")->getImage();
-
-    // // EXAMPLES
-    // // HOOK
-    // REPLACE_NAME("Game.Sample.Class", "set_Position", Class_set_Position);
-    // REPLACE_NAME_ORIG("Game.Sample.Class", ".ctor", Class_ctor, o_Class_ctor);
-
-    // // HOOK SUBCLASS
-    // auto SubClass = g_Image->getClass("Game.Sample.Class.SubClass", 1);
-    // REPLACE_NAME_KLASS(SubClass, "SampleMethod", SubClass_SampleMethod);
-
-    LOGD(OBFUSCATE("HOOKED!"));
+    initModMenu((void *)draw_thread, (void *)on_init);
 
     return nullptr;
+}
+
+int get_touchCount()
+{
+    if (ImGui::GetIO().WantCaptureMouse)
+        return 0;
+    return o_get_touchCount();
 }
 
 jobjectArray GetFeatureList(JNIEnv *env, [[maybe_unused]] jobject context)
@@ -255,6 +224,7 @@ extern "C" JNIEXPORT jint
     JNI_OnLoad(JavaVM *vm, [[maybe_unused]] void *reserved)
 {
     JNIEnv *env;
+
     vm->GetEnv((void **)&env, JNI_VERSION_1_6);
     if (RegisterMenu(env) != 0)
         return JNI_ERR;

@@ -51,6 +51,7 @@ set(LOCAL_SRC_FILES
         Menu/Setup.cpp
         Menu/ImGui.cpp
         Includes/Utils.cpp
+        Includes/Logger.cpp
         KittyMemory/KittyMemory.cpp
         KittyMemory/MemoryPatch.cpp
         KittyMemory/MemoryBackup.cpp
